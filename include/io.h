@@ -20,32 +20,16 @@ enum OpType {
     OP_COMPARE,     // in1, in2 -> out
 };
 
-// Input of resource libraries and CDFG
-class HLSInput {
-   public:
-    int n_resource_type;  // length of resources array
-    int n_op_type;    // number of operations, each type from the 8 categories
-    float target_cp;  // maximum ns in one cycle
-    int area_limit;   // total area limit
-    int n_block;      // length of blocks
-    int n_operation;  // total operations
-    std::vector<OpType> op_types;  // category of each operation type, 1~8
-    std::vector<Resource> resources;
-    std::vector<BasicBlock> blocks;
-
-    HLSInput(char *);
-};
-
 // Description of a type of resources
 class Resource {
    public:
     bool is_sequential;
     int area;
-    int delay;                 // need delay for an available result
-    int latency;               // 0 if not sequential
-    bool is_pipelined;         // false if not sequential; II = 1
-    int n_comp_op;             // number of compatible operations
-    std::vector<int> comp_op;  // compatible operations
+    float delay;                // need delay for an available result
+    int latency;                // 0 if not sequential
+    bool is_pipelined;          // false if not sequential; II = 1
+    int n_comp_op;              // number of compatible operations
+    std::vector<int> comp_ops;  // compatible operations
 
     Resource(std::ifstream &);
 };
@@ -76,13 +60,29 @@ class Operation {
     Operation(std::ifstream &);
 };
 
+// Input of resource libraries and CDFG
+class HLSInput {
+   public:
+    int n_resource_type;  // length of resources array
+    int n_op_type;    // number of operations, each type from the 8 categories
+    float target_cp;  // maximum ns in one cycle
+    int area_limit;   // total area limit
+    int n_block;      // length of blocks
+    int n_operation;  // total operations
+    std::vector<OpType> op_types;  // category of each operation type, 1~8
+    std::vector<Resource> resources;
+    std::vector<BasicBlock> blocks;
+    std::vector<Operation> operations;
+
+    HLSInput(char *);
+};
 class HLSOutput {
    public:
     int n_operation;
     int n_resource_type;
     std::vector<int> sched_cycles;    // starting cycle of op_i
-    std::vector<int> sched_type;      // the resource type op_i binds to
-    std::vector<int> sched_inst;      // the resource instance op_i binds to
+    std::vector<int> sched_types;     // the resource type op_i binds to
+    std::vector<int> sched_insts;     // the resource instance op_i binds to
     std::vector<int> resource_insts;  // number of instances for rtype_i
 
     void output();
