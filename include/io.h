@@ -32,6 +32,7 @@ class Resource {
     std::vector<int> comp_ops;  // compatible operations
 
     Resource(std::ifstream &);
+    void print();
 };
 
 // Description of a basic block
@@ -48,23 +49,25 @@ class BasicBlock {
     std::vector<int> succs;  // id of bbs
 
     BasicBlock(std::ifstream &);
+    void print();
 };
 
 // Description of an operation
 class Operation {
    public:
-    OpType optype;
+    int optype;
     int n_inputs;
     std::vector<int> inputs;  // id of ops
 
     Operation(std::ifstream &);
+    void print();
 };
 
 // Input of resource libraries and CDFG
 class HLSInput {
    public:
-    int n_resource_type;  // length of resources array
-    int n_op_type;    // number of operations, each type from the 8 categories
+    int n_resource_type;  // number of types of resources
+    int n_op_type;    // number of operation types, each type from the 8 categories
     float target_cp;  // maximum ns in one cycle
     int area_limit;   // total area limit
     int n_block;      // length of blocks
@@ -75,6 +78,7 @@ class HLSInput {
     std::vector<Operation> operations;
 
     HLSInput(char *);
+    void print();
 };
 class HLSOutput {
    public:
