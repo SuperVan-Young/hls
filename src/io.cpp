@@ -96,13 +96,36 @@ void hls::HLSOutput::output() {
     // only arithmetic, boolean and compare operations need to bind resource
     // instances.
     for (int i = 0; i < n_operation; i++) {
-        int optype = scheds[i].op.optype;
+        int optype = (scheds[i].op)->optype;
         int sched_type = op2rs[optype];
         if (sched_type != -1) {
             std::cout << sched_type << ' ' << scheds[i].inst << std::endl;
         } else {
             std::cout << -1 << std::endl;
         }
+    }
+}
+
+void hls::HLSOutput::setup(const HLSInput &hls_input) {
+    n_resource_type = hls_input.n_resource_type;
+    n_op_type = hls_input.n_op_type;
+    n_operation = hls_input.n_operation;
+
+    op2rs = std::vector<int>(n_op_type, -1);
+    insts = std::vector<std::vector<ResourceInst>>(n_resource_type);
+    scheds = std::vector<OperationSched>(n_operation);
+
+    for (int i = 0; i < hls_input.n_block; i++) {
+        const BasicBlock &bb = hls_input.blocks[i];
+        for (int op = 0; op < bb.n_op_in_block; op++) {
+            scheds[op].bb = &bb;
+        }
+    }
+    for (int i = 0; i < hls_input.n_operation; i++) {
+        const Operation &op = hls_input.operations[i];
+        scheds[i].op = &op;
+        scheds[i].cycle = -1;  // only schedule bool, arithm, and compare
+        scheds[i].inst = -1;   // a invalid default value
     }
 }
 

@@ -91,8 +91,8 @@ class ResourceInst {
 
 class OperationSched {
    public:
-    const BasicBlock &bb;
-    const Operation &op;
+    const BasicBlock *bb;
+    const Operation *op;
     int cycle;  // temporal positioning
     int inst;   // spatial binding
 };
@@ -101,6 +101,7 @@ class HLSOutput {
    public:
     // You need to set up scheduling and insts before scheduling
     int n_resource_type;
+    int n_op_type;
     int n_operation;
     // allocate type
     std::vector<int> op2rs;  // mapping from op type to resource type
