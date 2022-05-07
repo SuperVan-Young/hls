@@ -26,7 +26,7 @@ hls::HLSInput::HLSInput(char *filename) {
     // Resource library description
     fin >> n_resource_type >> n_op_type >> target_cp >> area_limit;
     for (int i = 0; i < n_resource_type; i++) {
-        resources.push_back(hls::Resource(fin));
+        resource_types.push_back(hls::ResourceType(fin));
     }
 
     // CDFG description
@@ -49,7 +49,7 @@ hls::HLSInput::HLSInput(char *filename) {
     fin.close();
 }
 
-hls::Resource::Resource(std::ifstream &fin) {
+hls::ResourceType::ResourceType(std::ifstream &fin) {
     int seq, pipe;
     fin >> seq >> area;
     is_sequential = (seq != 0);
@@ -58,7 +58,9 @@ hls::Resource::Resource(std::ifstream &fin) {
         fin >> latency >> delay >> pipe;
         is_pipelined = (pipe != 0);
     } else {
+        latency = 0;
         fin >> delay;
+        is_pipelined = false;
     }
 
     fin >> n_comp_op;
@@ -79,29 +81,32 @@ hls::Operation::Operation(std::ifstream &fin) {
 
 void hls::HLSOutput::output() {
     // scheduling result
-    for (int i = 0; i < n_operation; i++) std::cout << sched_cycles[i] << ' ';
+    for (int i = 0; i < n_operation; i++) std::cout << scheds[i].cycle << ' ';
     std::cout << std::endl;
 
     // allocation result
-    for (int i = 0; i < n_resource_type; i++)
-        std::cout << resource_insts[i] << ' ';
+    for (int i = 0; i < n_resource_type; i++) {
+        std::cout << insts[i].size() << ' ';
+    }
     std::cout << std::endl;
 
     // binding result
-    // for operations of categories 1-5 and 8, sched_types == -1
-    // its sched_inst is meaningless
-    // only arithmetic and boolean operations need to bind a resource instance
+    // for operations of categories 1-5, sched_types == -1,
+    // their sched_insts are meaningless.
+    // only arithmetic, boolean and compare operations need to bind resource
+    // instances.
     for (int i = 0; i < n_operation; i++) {
-        int sched_type = sched_types[i];
+        int optype = scheds[i].op.optype;
+        int sched_type = op2rs[optype];
         if (sched_type != -1) {
-            std::cout << sched_type << ' ' << sched_insts[i] << std::endl;
+            std::cout << sched_type << ' ' << scheds[i].inst << std::endl;
         } else {
-            std::cout << sched_type << std::endl;
+            std::cout << -1 << std::endl;
         }
     }
 }
 
-void hls::Resource::print() {
+void hls::ResourceType::print() {
     std::cout << "is_sequential: " << (int)is_sequential << std::endl;
     std::cout << "area: " << area << std::endl;
 
@@ -178,7 +183,7 @@ void hls::HLSInput::print() {
 
     for (int i = 0; i < n_resource_type; i++) {
         std::cout << "Resource " << i << std::endl;
-        resources[i].print();
+        resource_types[i].print();
         std::cout << std::endl;
     }
     for (int i = 0; i < n_block; i++) {

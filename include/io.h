@@ -1,7 +1,7 @@
 // io.hpp
 // Basic data structures as well as I/O.
-#ifndef HLS_IO_HPP
-#define HLS_IO_HPP
+#ifndef HLS_IO_H
+#define HLS_IO_H
 
 #include <fstream>
 #include <vector>
@@ -21,7 +21,7 @@ enum OpType {
 };
 
 // Description of a type of resources
-class Resource {
+class ResourceType {
    public:
     bool is_sequential;
     int area;
@@ -31,7 +31,7 @@ class Resource {
     int n_comp_op;              // number of compatible operations
     std::vector<int> comp_ops;  // compatible operations
 
-    Resource(std::ifstream &);
+    ResourceType(std::ifstream &);
     void print();
 };
 
@@ -67,27 +67,49 @@ class Operation {
 class HLSInput {
    public:
     int n_resource_type;  // number of types of resources
-    int n_op_type;    // number of operation types, each type from the 8 categories
-    float target_cp;  // maximum ns in one cycle
-    int area_limit;   // total area limit
-    int n_block;      // length of blocks
-    int n_operation;  // total operations
+    int n_op_type;        // number of operation types, each type from the 8
+                          // categories
+    float target_cp;      // maximum ns in one cycle
+    int area_limit;       // total area limit
+    int n_block;          // length of blocks
+    int n_operation;      // total operations
     std::vector<OpType> op_types;  // category of each operation type, 1~8
-    std::vector<Resource> resources;
+    std::vector<ResourceType> resource_types;
     std::vector<BasicBlock> blocks;
     std::vector<Operation> operations;
 
     HLSInput(char *);
     void print();
 };
+
+class ResourceInst {
+   public:
+    int r_type;   // resource type
+    int op_type;  // op type
+    int id;       // index among the same type of resource instances
+};
+
+class OperationSched {
+   public:
+    const BasicBlock &bb;
+    const Operation &op;
+    int cycle;  // temporal positioning
+    int inst;   // spatial binding
+};
+
 class HLSOutput {
    public:
-    int n_operation;
+    // You need to set up scheduling and insts before scheduling
     int n_resource_type;
-    std::vector<int> sched_cycles;    // starting cycle of op_i
-    std::vector<int> sched_types;     // the resource type op_i binds to
-    std::vector<int> sched_insts;     // the resource instance op_i binds to
-    std::vector<int> resource_insts;  // number of instances for rtype_i
+    int n_operation;
+    // allocate type
+    std::vector<int> op2rs;  // mapping from op type to resource type
+    // allocate inst
+    std::vector<std::vector<ResourceInst>> insts; // 2d vector!
+    // scheduling & binding
+    std::vector<OperationSched> scheds;
+
+    void setup(const HLSInput &);
 
     void output();
 };
