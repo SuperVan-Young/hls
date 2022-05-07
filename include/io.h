@@ -86,7 +86,11 @@ class ResourceInst {
    public:
     int r_type;   // resource type
     int op_type;  // op type
-    int id;       // index among the same type of resource instances
+
+    ResourceInst(int r_type_, int op_type_) {
+        r_type = r_type_;
+        op_type = op_type_;
+    }
 };
 
 class OperationSched {
@@ -106,7 +110,7 @@ class HLSOutput {
     // allocate type
     std::vector<int> op2rs;  // mapping from op type to resource type
     // allocate inst
-    std::vector<std::vector<ResourceInst>> insts; // 2d vector!
+    std::vector<std::vector<ResourceInst>> insts;  // 2d vector! dim 0 is rtype
     // scheduling & binding
     std::vector<OperationSched> scheds;
 
