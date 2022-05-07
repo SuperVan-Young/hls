@@ -110,9 +110,9 @@ int allocate_inst(const HLSInput &hin, HLSOutput &hout) {
         return -1;
 
     // write insts back to hout
-    for (int i = 0; i < hin.n_op_type; i++) {
-        for (auto e: insts[i])
-            hout.insts[i].push_back(e);
+    for (int i = 0; i < hin.n_resource_type; i++) {
+        for (auto j: insts[i])
+            hout.insts[i].push_back(j);
     }
     return 0;
 
