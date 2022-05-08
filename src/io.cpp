@@ -26,7 +26,9 @@ hls::HLSInput::HLSInput(char *filename) {
     // Resource library description
     fin >> n_resource_type >> n_op_type >> target_cp >> area_limit;
     for (int i = 0; i < n_resource_type; i++) {
-        resource_types.push_back(hls::ResourceType(fin));
+        hls::ResourceType rt(fin);
+        rt.rtid = i;
+        resource_types.push_back(rt);
     }
 
     // CDFG description
@@ -39,11 +41,15 @@ hls::HLSInput::HLSInput(char *filename) {
     }
     // Blocks
     for (int i = 0; i < n_block; i++) {
-        blocks.push_back(hls::BasicBlock(fin));
+        hls::BasicBlock bb(fin);
+        bb.bbid = i;
+        blocks.push_back(bb);
     }
     // Operations
     for (int i = 0; i < n_operation; i++) {
-        operations.push_back(hls::Operation(fin));
+        hls::Operation op(fin);
+        op.opid = i;
+        operations.push_back(op);
     }
 
     fin.close();

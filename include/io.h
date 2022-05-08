@@ -31,6 +31,8 @@ class ResourceType {
     int n_comp_op;              // number of compatible operations
     std::vector<int> comp_ops;  // compatible operations
 
+    int rtid;
+
     ResourceType(std::ifstream &);
     void print();
 };
@@ -48,6 +50,8 @@ class BasicBlock {
     std::vector<int> preds;  // id of bbs
     std::vector<int> succs;  // id of bbs
 
+    int bbid;
+
     BasicBlock(std::ifstream &);
     void print();
 };
@@ -58,6 +62,8 @@ class Operation {
     int optype;
     int n_inputs;
     std::vector<int> inputs;  // id of ops
+
+    int opid;
 
     Operation(std::ifstream &);
     void print();
