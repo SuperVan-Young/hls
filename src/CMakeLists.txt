@@ -3,8 +3,6 @@ message("Inside subdirectory src")
 # libio
 add_library(libio io.cpp)
 
-# libalgo
+# algorithm libs
+add_subdirectory(allocate)
 add_subdirectory(schedule)
-
-add_library(libalgo allocate.cpp)
-target_link_libraries(libalgo libschedule)

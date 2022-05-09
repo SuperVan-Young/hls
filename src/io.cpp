@@ -37,7 +37,7 @@ hls::HLSInput::HLSInput(char *filename) {
     for (int i = 0; i < n_op_type; i++) {
         int type;
         fin >> type;
-        op_types.push_back((OpType)type);
+        op_types.push_back((OpCategory)type);
     }
     // Blocks
     for (int i = 0; i < n_block; i++) {

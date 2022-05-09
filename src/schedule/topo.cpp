@@ -26,7 +26,7 @@ std::vector<TopoNode> gather_CDFG(const HLSInput &hin) {
         }
         // Operations of PHI, BR, ALLOCA will be scheduled to -1
         // Clear their in_degree to assure priority and cut off potential loops
-        OpType otype = hin.op_types[ops[i].optype];
+        OpCategory otype = hin.op_types[ops[i].optype];
         if (otype == OP_ALLOCA || otype == OP_BRANCH || otype == OP_PHI)
             g[i].in = 0;
     }
@@ -77,7 +77,7 @@ std::vector<int> order_bb(const HLSInput &hin,
     for (int i = 0; i < toposort.size(); i++) {
         int opid = toposort[i];
         int bbid = hin.operations[opid].bbid;
-        OpType otype = hin.op_types[hin.operations[opid].optype];
+        OpCategory otype = hin.op_types[hin.operations[opid].optype];
         if (otype == OP_ALLOCA || otype == OP_BRANCH || otype == OP_PHI)
             continue;
         res[i] = std::make_pair(opid, bbid);

@@ -9,6 +9,7 @@ add_subdirectory(src)
 
 add_executable(hls src/main.cpp)
 target_link_libraries(hls libio)
-target_link_libraries(hls libalgo)
+target_link_libraries(hls liballocate)
+target_link_libraries(hls libschedule)
 
 add_subdirectory(test)

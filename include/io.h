@@ -8,7 +8,7 @@
 
 namespace hls {
 
-enum OpType {
+enum OpCategory {
     OP_BRANCH = 1,  // cond, true-branch, false-branch -> None
     OP_ALLOCA,      // k inputs -> None
     OP_LOAD,        // k inputs as indices -> array element
@@ -80,7 +80,7 @@ class HLSInput {
     int area_limit;       // total area limit
     int n_block;          // length of blocks
     int n_operation;      // total operations
-    std::vector<OpType> op_types;  // category of each operation type, 1~8
+    std::vector<OpCategory> op_types;  // category of each operation type, 1~8
     std::vector<ResourceType> resource_types;
     std::vector<BasicBlock> blocks;
     std::vector<Operation> operations;

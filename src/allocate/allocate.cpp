@@ -63,7 +63,7 @@ int allocate_type(const HLSInput &hin, HLSOutput &hout,
     // OpType 1~5 must have no allocation (nor scheduling),
     // while OpType 6~8 must have a positive binding
     for (int i = 0; i < hin.n_op_type; i++) {
-        OpType op_type = hin.op_types[i];
+        OpCategory op_type = hin.op_types[i];
         int sched_type = sched_types[i];
         if (op_type >= OP_ARITHM && op_type <= OP_COMPARE) {
             if (sched_type == -1) return -1;
