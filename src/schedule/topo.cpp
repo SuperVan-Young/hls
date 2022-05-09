@@ -1,8 +1,9 @@
 #include "topo.h"
 
+#include <algorithm>
+#include <iostream>
 #include <queue>
 #include <vector>
-#include <algorithm>
 
 namespace hls {
 
@@ -13,8 +14,9 @@ std::vector<TopoNode> gather_CDFG(const HLSInput &hin) {
     std::vector<TopoNode> g(ops.size());
 
     for (int i = 0; i < ops.size(); i++) {
-        g[i].id = i;
         const Operation &op = ops[i];
+        g[i].id = op.opid;
+        g[i].bbid = op.bbid;
         for (int j = 0; j < op.n_inputs; j++) {
             int v = op.inputs[j];
             if (v != -1) {
@@ -60,14 +62,14 @@ int topology_sort(std::vector<TopoNode> &g, std::vector<int> &res) {
     return 0;
 }
 
-
 // Return an ordering of basic blocks.
 // Considering performances, we schedule one basic block at a time.
 // We first schedule basic blocks with operation of higher priority,
 // that is, these ops are at the beginning of toposort.
-std::vector<int> order_bb(const HLSInput &hin, std::vector<int> &toposort) {
+std::vector<int> order_bb(const HLSInput &hin,
+                          const std::vector<int> &toposort) {
     // pair = (first operation, block number), it's easier to sort
-    std::vector<std::pair<int, int>>res(hin.n_block);
+    std::vector<std::pair<int, int>> res(hin.n_block);
     for (int i = 0; i < hin.n_block; i++) {
         res[i] = std::make_pair(-1, i);
     }
@@ -84,9 +86,26 @@ std::vector<int> order_bb(const HLSInput &hin, std::vector<int> &toposort) {
     std::sort(res.begin(), res.end());
 
     std::vector<int> r(hin.n_block);
-    for (int i = 0; i < hin.n_block; i++)
-        r[i]= res[i].second;
+    for (int i = 0; i < hin.n_block; i++) r[i] = res[i].second;
     return r;
+}
+
+// Return a basic block's operations, return it's sub topology sort
+std::vector<int> subgraph_bb(const std::vector<int> &ops,
+                             const std::vector<int> &toposort) {
+    std::vector<int> res;
+    for (auto e : toposort) {
+        for (int j = 0; j < ops.size(); j++) {
+            if (e == ops[j]) {
+                res.push_back(e);
+                break;
+            }
+        }
+    }
+    if (res.size() != ops.size()) {
+        std::cerr << "Error: subgraph_bb" << std::endl;
+    }
+    return res;
 }
 
 };  // namespace hls
