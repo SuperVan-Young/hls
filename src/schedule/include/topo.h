@@ -17,9 +17,11 @@ class TopoNode {
     bool operator>(const TopoNode &x) const { return id > x.id; }
 };
 
-std::vector<TopoNode> gather_CDFG(const std::vector<Operation> &);
+std::vector<TopoNode> gather_CDFG(const HLSInput &);
 
 int topology_sort(std::vector<TopoNode> &, std::vector<int> &);
+
+std::vector<int> order_bb(const HLSInput&, std::vector<int> &);
 
 }; // namespace hls
 

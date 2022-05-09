@@ -1,12 +1,15 @@
+#include "topo.h"
+
 #include <queue>
 #include <vector>
-
-#include "topo.h"
+#include <algorithm>
 
 namespace hls {
 
 // Collect CDFG to form a DAG of TopoNodes
-std::vector<TopoNode> gather_CDFG(const std::vector<Operation> &ops) {
+// You must use the complete operation array
+std::vector<TopoNode> gather_CDFG(const HLSInput &hin) {
+    const std::vector<Operation> &ops = hin.operations;
     std::vector<TopoNode> g(ops.size());
 
     for (int i = 0; i < ops.size(); i++) {
@@ -19,6 +22,11 @@ std::vector<TopoNode> gather_CDFG(const std::vector<Operation> &ops) {
                 g[v].out.push_back(i);
             }
         }
+        // Operations of PHI, BR, ALLOCA will be scheduled to -1
+        // Clear their in_degree to assure priority and cut off potential loops
+        OpType otype = hin.op_types[ops[i].optype];
+        if (otype == OP_ALLOCA || otype == OP_BRANCH || otype == OP_PHI)
+            g[i].in = 0;
     }
 
     return g;
@@ -43,15 +51,42 @@ int topology_sort(std::vector<TopoNode> &g, std::vector<int> &res) {
         TopoNode node = q.top();
         q.pop();
         res.push_back(node.id);
-        for (auto v: node.out) {
-            if ((--g[v].in) == 0)
-                q.push(g[v]);
+        for (auto v : node.out) {
+            if ((--g[v].in) == 0) q.push(g[v]);
         }
     }
 
-    if (res.size() != g.size())
-        return -1;
+    if (res.size() != g.size()) return -1;
     return 0;
+}
+
+
+// Return an ordering of basic blocks.
+// Considering performances, we schedule one basic block at a time.
+// We first schedule basic blocks with operation of higher priority,
+// that is, these ops are at the beginning of toposort.
+std::vector<int> order_bb(const HLSInput &hin, std::vector<int> &toposort) {
+    // pair = (first operation, block number), it's easier to sort
+    std::vector<std::pair<int, int>>res(hin.n_block);
+    for (int i = 0; i < hin.n_block; i++) {
+        res[i] = std::make_pair(-1, i);
+    }
+
+    for (int i = 0; i < toposort.size(); i++) {
+        int opid = toposort[i];
+        int bbid = hin.operations[opid].bbid;
+        OpType otype = hin.op_types[hin.operations[opid].optype];
+        if (otype == OP_ALLOCA || otype == OP_BRANCH || otype == OP_PHI)
+            continue;
+        res[i] = std::make_pair(opid, bbid);
+    }
+
+    std::sort(res.begin(), res.end());
+
+    std::vector<int> r(hin.n_block);
+    for (int i = 0; i < hin.n_block; i++)
+        r[i]= res[i].second;
+    return r;
 }
 
 };  // namespace hls

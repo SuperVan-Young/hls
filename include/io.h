@@ -63,6 +63,7 @@ class Operation {
     int n_inputs;
     std::vector<int> inputs;  // id of ops
 
+    int bbid;
     int opid;
 
     Operation(std::ifstream &);

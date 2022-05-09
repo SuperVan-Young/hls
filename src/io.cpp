@@ -51,6 +51,14 @@ hls::HLSInput::HLSInput(char *filename) {
         op.opid = i;
         operations.push_back(op);
     }
+    // op's bbid
+    for (int i = 0; i < n_block; i++) {
+        hls::BasicBlock &bb = blocks[i]; 
+        for (int j = 0; j < bb.n_op_in_block; j++) {
+            hls::Operation &op = operations[bb.ops[j]];
+            op.bbid = i;
+        }
+    }
 
     fin.close();
 }
