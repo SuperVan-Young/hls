@@ -8,6 +8,10 @@
 
 namespace hls {
 
+// Operation categories
+// Schedule + Binding: arithmetic, boolean, compare
+// Only schedule: load, store
+// No schedule nor binding: branch, allocate, phi
 enum OpCategory {
     OP_BRANCH = 1,  // cond, true-branch, false-branch -> None
     OP_ALLOCA,      // k inputs -> None

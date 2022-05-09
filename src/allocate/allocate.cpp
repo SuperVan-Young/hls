@@ -60,15 +60,14 @@ int allocate_type(const HLSInput &hin, HLSOutput &hout,
     }
 
     // Validate the result.
-    // OpType 1~5 must have no allocation (nor scheduling),
-    // while OpType 6~8 must have a positive binding
+    // allocate, phi and branch must have no allocationg while others must.
     for (int i = 0; i < hin.n_op_type; i++) {
         OpCategory op_type = hin.op_types[i];
         int sched_type = sched_types[i];
-        if (op_type >= OP_ARITHM && op_type <= OP_COMPARE) {
-            if (sched_type == -1) return -1;
-        } else {
+        if (op_type == OP_BRANCH || op_type == OP_ALLOCA || op_type == OP_PHI) {
             if (sched_type != -1) return -1;
+        } else {
+            if (sched_type == -1) return -1;
         }
     }
 
