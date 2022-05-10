@@ -1,7 +1,7 @@
 message("Inside subdirectory src")
 
 # libio
-add_library(libio io.cpp)
+add_subdirectory(data)
 
 # algorithm libs
 add_subdirectory(allocate)

@@ -33,7 +33,7 @@ hls::HLSInput::HLSInput(char *filename) {
 
     // CDFG description
     fin >> n_block >> n_operation;
-    // Oeration types
+    // Operation types
     for (int i = 0; i < n_op_type; i++) {
         int type;
         fin >> type;
