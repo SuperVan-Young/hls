@@ -12,6 +12,7 @@ int main(int argc, char* argv[]) {
     hls::HLSOutput hls_output;
     hls_output.setup(hls_input);
     hls::allocate(hls_input, hls_output);
+    hls::schedule(hls_input, hls_output);
     hls_output.output();
 
     return 0;

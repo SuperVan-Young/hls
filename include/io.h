@@ -91,6 +91,9 @@ class HLSInput {
 
     HLSInput(char *);
     void print();
+    OpCategory get_op_cate(const Operation *op) const {
+        return op_types[op->optype];
+    }
 };
 
 class ResourceInst {
