@@ -55,7 +55,7 @@ bool AreaAllocator::validate() {
 }
 
 // Write result to hls output
-void AreaAllocator::write(HLSOutput &hout) {
+void AreaAllocator::copyout(HLSOutput &hout) {
     hout.op2rs.resize(n_op_type, 0);
     hout.insts.resize(hin->n_resource_type, vector<ResourceInst>());
 

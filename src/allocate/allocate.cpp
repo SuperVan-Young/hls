@@ -14,7 +14,7 @@ int allocate(const HLSInput &hls_input, HLSOutput &hls_output) {
     area_allocator.allocate_inst();
     if (!area_allocator.validate())
         return -1;
-    area_allocator.write(hls_output);
+    area_allocator.copyout(hls_output);
     return 0;
 }
 

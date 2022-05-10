@@ -1,5 +1,5 @@
-#ifndef HLS_ALLOCATE_AREA_H
-#define HLS_ALLOCATE_AREA_H
+#ifndef HLS_ALLOCATE_PERF_H
+#define HLS_ALLOCATE_PERF_H
 
 #include <vector>
 
@@ -9,9 +9,8 @@ using std::vector;
 
 namespace hls {
 
-// Allocate each operation with an resource type of minimum area
-// and only one instance.
-class AreaAllocator {
+// Allocate each operation w.r.t. its expected latency
+class PerfAllocator {
    private:
     const HLSInput *hin;
     int n_op_type = 0;
@@ -19,17 +18,13 @@ class AreaAllocator {
     vector<int> insts;      // length = n_op_type
 
    public:
-    AreaAllocator(const HLSInput &hin) {
+    PerfAllocator(const HLSInput &hin) {
         this->hin = &hin;
         this->n_op_type = hin.n_op_type;
         opid2rtid.resize(n_op_type, -1);
         insts.resize(n_op_type, 0);
     }
-    void allocate_type();
-    void allocate_inst();
-    bool validate();
-    void copyout(HLSOutput &hout);
-};
+}
 
 }  // namespace hls
 
