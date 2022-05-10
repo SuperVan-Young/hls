@@ -1,5 +1,5 @@
 message("Inside subdirectory src/schedule")
 
-add_library(liballocate allocate.cpp)
+add_library(liballocate allocate.cpp area.cpp)
 
 target_include_directories(liballocate PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
