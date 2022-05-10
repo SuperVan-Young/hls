@@ -4,6 +4,7 @@
 #define HLS_IO_H
 
 #include <fstream>
+#include <iostream>
 #include <vector>
 
 namespace hls {

@@ -13,7 +13,7 @@ int main(int argc, char* argv[]) {
     hls_output.setup(hls_input);
     hls::allocate(hls_input, hls_output);
     hls::schedule(hls_input, hls_output);
-    hls_output.output();
+    hls::bind(hls_input, hls_output);
 
     return 0;
 }

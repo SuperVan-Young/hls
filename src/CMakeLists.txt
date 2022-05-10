@@ -6,3 +6,4 @@ add_library(libio io.cpp)
 # algorithm libs
 add_subdirectory(allocate)
 add_subdirectory(schedule)
+add_subdirectory(bind)
