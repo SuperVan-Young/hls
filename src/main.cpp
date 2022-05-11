@@ -11,10 +11,10 @@ int main(int argc, char* argv[]) {
     if (argc != 2)
         exit(-1);
     hls::HLSInput hls_input(argv[1]);
-#ifdef DEBUG_MAIN
-    hls_input.print();
-    cout << endl;
-#endif
+// #ifdef DEBUG_MAIN
+//     hls_input.print();
+//     cout << endl;
+// #endif
 
     hls::HLSOutput hls_output;
     hls_output.setup(hls_input);

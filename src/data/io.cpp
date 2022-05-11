@@ -12,7 +12,7 @@ void input_array(std::ifstream &fin, std::vector<int> &array, int len) {
     }
 }
 
-void output_array(std::string name, std::vector<int> &array, int len) {
+void output_array(std::string name, const std::vector<int> &array, int len) {
     std::cout << name << ": ";
     for (int i = 0; i < len; i++) {
         std::cout << array[i] << ' ';
@@ -143,7 +143,7 @@ void hls::HLSOutput::setup(const HLSInput &hls_input) {
     }
 }
 
-void hls::ResourceType::print() {
+void hls::ResourceType::print() const {
     std::cout << "is_sequential: " << (int)is_sequential << std::endl;
     std::cout << "area: " << area << std::endl;
 
@@ -155,7 +155,7 @@ void hls::ResourceType::print() {
     output_array("Compatible Operation", comp_ops, n_comp_op);
 }
 
-void hls::BasicBlock::print() {
+void hls::BasicBlock::print() const {
     std::cout << "n_op_in_block: " << n_op_in_block << std::endl;
     std::cout << "n_pred: " << n_pred << std::endl;
     std::cout << "n_succ: " << n_succ << std::endl;
@@ -166,14 +166,14 @@ void hls::BasicBlock::print() {
     output_array("Succs", succs, n_succ);
 }
 
-void hls::Operation::print() {
+void hls::Operation::print() const {
     std::cout << "optype: " << optype << std::endl;
     std::cout << "n_inputs: " << n_inputs << std::endl;
 
     output_array("Inputs", inputs, n_inputs);
 }
 
-void hls::HLSInput::print() {
+void hls::HLSInput::print() const {
     std::cout << "HLS INPUTS" << std::endl;
 
     std::cout << "n_resource_type: " << n_resource_type << std::endl;

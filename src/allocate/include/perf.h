@@ -34,6 +34,7 @@ public:
 
     void setup();
     void print();
+    float estimate_perf(int optype, const ResourceType &rtype, int num);
 
 };
 
@@ -55,8 +56,7 @@ class PerfAllocator : public AreaAllocator {
         AreaAllocator::allocate_type();
         AreaAllocator::allocate_inst();
     }
-    void setup();
-    void allocate_type();
+    void allocate_type(int area_limit);
     void allocate_inst();
 };
 

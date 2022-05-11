@@ -44,7 +44,7 @@ class ResourceType {
     int rtid;
 
     ResourceType(std::ifstream &);
-    void print();
+    void print() const;
 };
 
 // Description of a basic block
@@ -63,7 +63,7 @@ class BasicBlock {
     int bbid;
 
     BasicBlock(std::ifstream &);
-    void print();
+    void print() const;
 };
 
 // Description of an operation
@@ -77,7 +77,7 @@ class Operation {
     int opid;
 
     Operation(std::ifstream &);
-    void print();
+    void print() const;
 };
 
 // Input of resource libraries and CDFG
@@ -96,7 +96,7 @@ class HLSInput {
     std::vector<Operation> operations;
 
     HLSInput(char *);
-    void print();
+    void print() const;
     OpCategory get_op_cate(const Operation *op) const {
         return op_types[op->optype];
     }

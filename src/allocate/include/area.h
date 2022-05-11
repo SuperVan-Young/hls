@@ -29,6 +29,7 @@ class AreaAllocator {
     void allocate_inst();
     bool validate();
     void copyout(HLSOutput &hout);
+    void print(bool verbose=false) const;
 };
 
 }  // namespace hls

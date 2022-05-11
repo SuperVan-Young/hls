@@ -69,4 +69,20 @@ void AreaAllocator::copyout(HLSOutput &hout) {
     }
 }
 
+// Display allocated result
+void AreaAllocator::print(bool verbose) const {
+    using std::cout;
+    using std::endl;
+    cout << "Allocation Result" << endl;
+    for (int i = 0; i < n_op_type; i++) {
+        cout << i << ": " << opid2rtid[i] << ", " << insts[i] << endl;
+        if (verbose) {
+            int rtid = opid2rtid[i];
+            if (rtid != - 1)
+                hin->resource_types[rtid].print();
+            cout << endl;
+        }
+    }
+}
+
 }  // namespace hls
