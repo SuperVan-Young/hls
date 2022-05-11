@@ -6,6 +6,11 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <map>
+
+using std::vector;
+using std::map;
+using std::pair;
 
 namespace hls {
 

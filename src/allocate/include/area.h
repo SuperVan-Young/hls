@@ -12,7 +12,7 @@ namespace hls {
 // Allocate each operation with an resource type of minimum area
 // and only one instance.
 class AreaAllocator {
-   private:
+   protected:
     const HLSInput *hin;
     int n_op_type = 0;
     vector<int> opid2rtid;  // length = n_op_type
