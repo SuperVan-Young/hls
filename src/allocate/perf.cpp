@@ -10,7 +10,10 @@ using std::map;
 
 namespace hls {
 
-AdjacentList build_induced_graph(int bbid, const HLSInput &hin) {
+typedef pair<int, vector<int>> AdjacentNode;
+typedef map<int, AdjacentNode> AdjacentList;
+
+static AdjacentList build_induced_graph(int bbid, const HLSInput &hin) {
     AdjacentList list;
     const BasicBlock &bb = hin.blocks[bbid];
 

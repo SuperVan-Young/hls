@@ -25,12 +25,12 @@ int main(int argc, char* argv[]) {
     cout << endl;
 #endif
 
-//     hls::schedule(hls_input, hls_output);
-// #ifdef DEBUG_MAIN
-//     cout << "After Scheduling" << endl;
-//     hls_output.output();
-//     cout << endl;
-// #endif
+    hls::schedule(hls_input, hls_output);
+#ifdef DEBUG_MAIN
+    cout << "After Scheduling" << endl;
+    hls_output.output();
+    cout << endl;
+#endif
 
 //     hls::bind(hls_input, hls_output);
 // #ifdef DEBUG_MAIN

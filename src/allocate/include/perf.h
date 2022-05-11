@@ -14,9 +14,6 @@ using std::map;
 
 namespace hls {
 
-typedef pair<int, vector<int>> AdjacentNode;
-typedef map<int, AdjacentNode> AdjacentList;
-
 // Abstracted CDFG of a basic block
 class AbstractedCDFG {
 public:
