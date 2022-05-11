@@ -95,51 +95,37 @@ hls::Operation::Operation(std::ifstream &fin) {
 
 void hls::HLSOutput::output() {
     // scheduling result
-    for (int i = 0; i < n_operation; i++) std::cout << scheds[i].cycle << ' ';
+    for (int i = 0; i < n_operation; i++) std::cout << scheds[i] << ' ';
     std::cout << std::endl;
 
     // allocation result
-    for (int i = 0; i < n_resource_type; i++) {
-        std::cout << insts[i].size() << ' ';
+    vector<int> cnt_rtype(n_resource_type, 0);
+    vector<int> op2rbase(n_op_type, 0); // optype -> smallest output rid
+    for (int optype = 0; optype < n_op_type; optype++) {
+        int rtid = ot2rtid[optype];
+        if (rtid != -1) {  // allocated with rtype
+            op2rbase[optype] = cnt_rtype[rtid];
+            cnt_rtype[rtid] += insts[optype]; // but insts could be 0
+        }
     }
+    for (auto cnt: cnt_rtype)
+        std::cout << cnt << ' ';
     std::cout << std::endl;
 
     // binding result
-    // for operations of categories 1-5, sched_types == -1,
-    // their sched_insts are meaningless.
+    // for operations of categories 1-5, binds == -1;
     // only arithmetic, boolean and compare operations need to bind resource
     // instances.
-    for (int i = 0; i < n_operation; i++) {
-        int optype = (scheds[i].op)->optype;
-        int sched_type = op2rs[optype];
-        if (sched_type != -1) {
-            std::cout << sched_type << ' ' << scheds[i].inst << std::endl;
-        } else {
+    for (int opid = 0; opid < n_operation; opid++) {
+        int optype = hin->operations[opid].optype;
+        int rid = binds[opid];
+        if (rid == -1) {
             std::cout << -1 << std::endl;
         }
-    }
-}
-
-void hls::HLSOutput::setup(const HLSInput &hls_input) {
-    n_resource_type = hls_input.n_resource_type;
-    n_op_type = hls_input.n_op_type;
-    n_operation = hls_input.n_operation;
-
-    op2rs = std::vector<int>(n_op_type, -1);
-    insts = std::vector<std::vector<ResourceInst>>(n_resource_type);
-    scheds = std::vector<OperationSched>(n_operation);
-
-    for (int i = 0; i < hls_input.n_block; i++) {
-        const BasicBlock &bb = hls_input.blocks[i];
-        for (int op = 0; op < bb.n_op_in_block; op++) {
-            scheds[op].bb = &bb;
+        else {
+            rid += op2rbase[optype];
+            std::cout << ot2rtid[optype] << ' ' << rid << std::endl;
         }
-    }
-    for (int i = 0; i < hls_input.n_operation; i++) {
-        const Operation &op = hls_input.operations[i];
-        scheds[i].op = &op;
-        scheds[i].cycle = -1;  // only schedule bool, arithm, and compare
-        scheds[i].inst = -1;   // a invalid default value
     }
 }
 

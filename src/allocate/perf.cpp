@@ -6,7 +6,7 @@
 using std::map;
 
 // #define DEBUG
-#define DEBUG_ALLOCATE
+// #define DEBUG_ALLOCATE
 
 namespace hls {
 
@@ -204,12 +204,12 @@ void PerfAllocator::allocate_type(int area_limit) {
             }
         }
     }
-    
+
     // record the best result
     int area = area_limit;
     for (int i = n_op_type - 1; i >= 0; i--) {
         int rtid = footprint[i][area];
-        opid2rtid[i] = rtid;
+        ot2rtid[i] = rtid;
         if (rtid != -1) {
             const ResourceType &rtype = hin->resource_types[rtid];
             area -= rtype.area;
@@ -223,6 +223,8 @@ void PerfAllocator::allocate_type(int area_limit) {
 
 void PerfAllocator::allocate_inst() {
     // TODO: optimize according to area / (perf0 - perf)
+
+    
 }
 
 }  // namespace hls

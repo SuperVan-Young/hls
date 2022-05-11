@@ -5,12 +5,12 @@
 
 #include <fstream>
 #include <iostream>
-#include <vector>
 #include <map>
+#include <vector>
 
-using std::vector;
 using std::map;
 using std::pair;
+using std::vector;
 
 namespace hls {
 
@@ -102,39 +102,32 @@ class HLSInput {
     }
 };
 
-class ResourceInst {
-   public:
-    int r_type;   // resource type
-    int op_type;  // op type
-
-    ResourceInst(int r_type_, int op_type_) {
-        r_type = r_type_;
-        op_type = op_type_;
-    }
-};
-
-class OperationSched {
-   public:
-    const BasicBlock *bb;
-    const Operation *op;
-    int cycle;  // temporal positioning
-    int inst;   // spatial binding
-};
-
 class HLSOutput {
    public:
     // You need to set up scheduling and insts before scheduling
     int n_resource_type;
     int n_op_type;
     int n_operation;
+    const HLSInput *hin;
     // allocate type
-    std::vector<int> op2rs;  // mapping from op type to resource type
+    std::vector<int> ot2rtid;  // length of n_op_type
     // allocate inst
-    std::vector<std::vector<ResourceInst>> insts;  // 2d vector! dim 0 is rtype
-    // scheduling & binding
-    std::vector<OperationSched> scheds;
+    std::vector<int> insts;  // length of n_op_type
+    // scheduling
+    std::vector<int> scheds;  // length of n_operation
+    // binding
+    std::vector<int> binds;  // length of n_operation
 
-    void setup(const HLSInput &);
+    HLSOutput(const HLSInput &hin) {
+        this->n_resource_type = hin.n_resource_type;
+        this->n_op_type = hin.n_op_type;
+        this->n_operation = hin.n_operation;
+        this->hin = &hin;
+        ot2rtid.resize(n_op_type, -1);
+        insts.resize(n_op_type, 0);
+        scheds.resize(n_operation, -1);
+        binds.resize(n_operation, -1);
+    }
 
     void output();
 };

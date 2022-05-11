@@ -14,7 +14,7 @@ void AreaAllocator::allocate_type() {
             int area = rt.area;
             if (area < areas[comp_op]) {
                 areas[comp_op] = area;
-                opid2rtid[comp_op] = rt.rtid;
+                ot2rtid[comp_op] = rt.rtid;
             }
         }
     }
@@ -23,7 +23,7 @@ void AreaAllocator::allocate_type() {
 // Allocate each type of operation with one instance, if it needs any
 void AreaAllocator::allocate_inst() {
     for (int i = 0; i < n_op_type; i++) {
-        int rt = opid2rtid[i];
+        int rt = ot2rtid[i];
         if (rt != -1) insts[i]++;
     }
 }
@@ -35,7 +35,7 @@ bool AreaAllocator::validate() {
 
     for (int op = 0; op < n_op_type; op++) {
         OpCategory op_cate = hin->op_types[op];
-        int rt = opid2rtid[op];
+        int rt = ot2rtid[op];
 
         // check if operation is allocated
         if (rt == -1) {
@@ -56,16 +56,9 @@ bool AreaAllocator::validate() {
 
 // Write result to hls output
 void AreaAllocator::copyout(HLSOutput &hout) {
-    hout.op2rs.resize(n_op_type, 0);
-    hout.insts.resize(hin->n_resource_type, vector<ResourceInst>());
-
     for (int op = 0; op < n_op_type; op++) {
-        int rt = opid2rtid[op];
-        hout.op2rs[op] = rt;
-        if (rt != -1) {
-            ResourceInst inst(rt, op);
-            hout.insts[rt].push_back(inst);
-        }
+        hout.ot2rtid[op] = ot2rtid[op];
+        hout.insts[op] = insts[op];
     }
 }
 
@@ -75,9 +68,9 @@ void AreaAllocator::print(bool verbose) const {
     using std::endl;
     cout << "Allocation Result" << endl;
     for (int i = 0; i < n_op_type; i++) {
-        cout << i << ": " << opid2rtid[i] << ", " << insts[i] << endl;
+        cout << i << ": " << ot2rtid[i] << ", " << insts[i] << endl;
         if (verbose) {
-            int rtid = opid2rtid[i];
+            int rtid = ot2rtid[i];
             if (rtid != - 1)
                 hin->resource_types[rtid].print();
             cout << endl;
