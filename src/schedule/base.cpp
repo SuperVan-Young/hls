@@ -83,7 +83,7 @@ int BaseScheduler::schedule_block(int bbid, map<int, int> &res) {
     for (auto opid: topo) {
         const auto &op = hin->operations[opid];
         OpCategory opcate = hin->get_op_cate(&op);
-        if (opcate == OP_ALLOCA || opcate == OP_BRANCH || opcate == OP_COMPARE)
+        if (opcate == OP_ALLOCA || opcate == OP_BRANCH || opcate == OP_PHI)
             res.insert(std::make_pair(opid, -1));
         else
             res.insert(std::make_pair(opid, l));
