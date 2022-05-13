@@ -13,4 +13,4 @@ target_link_libraries(hls liballocate)
 target_link_libraries(hls libschedule)
 target_link_libraries(hls libbind)
 
-add_subdirectory(test)
+# add_subdirectory(test)

@@ -3,7 +3,7 @@
 #include "io.h"
 #include "algo.h"
 
-#define DEBUG_MAIN
+// #define DEBUG_MAIN
 using std::cout;
 using std::endl;
 
@@ -32,12 +32,12 @@ int main(int argc, char* argv[]) {
     cout << endl;
 #endif
 
-//     hls::bind(hls_input, hls_output);
-// #ifdef DEBUG_MAIN
-//     cout << "After Binding" << endl;
-//     hls_output.output();
-//     cout << endl;
-// #endif
+    hls::bind(hls_input, hls_output);
+#ifdef DEBUG_MAIN
+    cout << "After Binding" << endl;
+    hls_output.output();
+    cout << endl;
+#endif
 
     hls_output.output();
     return 0;
