@@ -2,7 +2,6 @@
 
 #include "algo.h"
 #include "io.h"
-#include "list.h"
 #include "base.h"
 
 namespace hls {
