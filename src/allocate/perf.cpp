@@ -6,11 +6,14 @@
 using std::map;
 
 // #define DEBUG
-#define DEBUG_ALLOCATE
+// #define DEBUG_ALLOCATE
 
 namespace hls {
 
-AdjacentList build_induced_graph(int bbid, const HLSInput &hin) {
+typedef pair<int, vector<int>> AdjacentNode;
+typedef map<int, AdjacentNode> AdjacentList;
+
+static AdjacentList build_induced_graph(int bbid, const HLSInput &hin) {
     AdjacentList list;
     const BasicBlock &bb = hin.blocks[bbid];
 
@@ -21,7 +24,7 @@ AdjacentList build_induced_graph(int bbid, const HLSInput &hin) {
     // add edges
     for (auto v : bb.ops) {
         const auto &op = hin.operations[v];
-        if (hin.get_op_cate(&op) == OP_PHI)  // ignore phi nodes inputs
+        if (hin.get_opcate(v) == OP_PHI)  // ignore phi nodes inputs
             continue;
         for (auto u : op.inputs) {
             if (list.count(u)) {  // prev vertex, ignore -1 automatically
@@ -204,12 +207,12 @@ void PerfAllocator::allocate_type(int area_limit) {
             }
         }
     }
-    
+
     // record the best result
     int area = area_limit;
     for (int i = n_op_type - 1; i >= 0; i--) {
         int rtid = footprint[i][area];
-        opid2rtid[i] = rtid;
+        ot2rtid[i] = rtid;
         if (rtid != -1) {
             const ResourceType &rtype = hin->resource_types[rtid];
             area -= rtype.area;
@@ -223,6 +226,8 @@ void PerfAllocator::allocate_type(int area_limit) {
 
 void PerfAllocator::allocate_inst() {
     // TODO: optimize according to area / (perf0 - perf)
+
+    
 }
 
 }  // namespace hls

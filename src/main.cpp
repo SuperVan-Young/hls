@@ -3,41 +3,37 @@
 #include "io.h"
 #include "algo.h"
 
-#define DEBUG_MAIN
-using std::cout;
+// #define DEBUG_MAIN
+using std::cerr;
 using std::endl;
 
 int main(int argc, char* argv[]) {
     if (argc != 2)
         exit(-1);
     hls::HLSInput hls_input(argv[1]);
-// #ifdef DEBUG_MAIN
-//     hls_input.print();
-//     cout << endl;
-// #endif
+    // hls_input.print();
 
-    hls::HLSOutput hls_output;
-    hls_output.setup(hls_input);
+    hls::HLSOutput hls_output(hls_input);
 
     hls::allocate(hls_input, hls_output);
-#ifdef DEBUG_MAIN
-    cout << "After Allocation" << endl;
+#ifdef DEBUG_HLS_ALLOCATION
+    cerr << "After Allocation" << endl;
     hls_output.output();
-    cout << endl;
+    cerr << endl;
 #endif
 
     hls::schedule(hls_input, hls_output);
-#ifdef DEBUG_MAIN
-    cout << "After Scheduling" << endl;
+#ifdef DEBUG_HLS_SCHEDULE
+    cerr << "After Scheduling" << endl;
     hls_output.output();
-    cout << endl;
+    cerr << endl;
 #endif
 
     hls::bind(hls_input, hls_output);
-#ifdef DEBUG_MAIN
-    cout << "After Binding" << endl;
+#ifdef DEBUG_HLS_BIND
+    cerr << "After Binding" << endl;
     hls_output.output();
-    cout << endl;
+    cerr << endl;
 #endif
 
     hls_output.output();

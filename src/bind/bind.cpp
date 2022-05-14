@@ -6,11 +6,8 @@ namespace hls {
 
 // Check if an operation needs binding
 bool ConflictGraph::need_binding(int opid, const HLSInput &hin) {
-    const auto &op = hin.operations[opid];
-    OpCategory op_cate = hin.get_op_cate(&op);
-    if (op_cate != OP_ARITHM && op_cate != OP_BOOL && op_cate != OP_COMPARE)
-        return false;
-    return true;
+    OpCategory opcate = hin.get_opcate(opid);
+    return hin.need_bind(opcate);
 }
 
 // Check if two operations have conflict.
@@ -28,10 +25,10 @@ bool ConflictGraph::check_conflict(int opid1, int opid2, const HLSInput &hin,
 
     // Execution overlaps?
     int optype = op1.optype;
-    int rstype = hout.op2rs[optype];
+    int rstype = hout.ot2rtid[optype];
     const ResourceType &rs = hin.resource_types[rstype];
-    int early = std::min(hout.scheds[opid1].cycle, hout.scheds[opid2].cycle);
-    int late = std::max(hout.scheds[opid1].cycle, hout.scheds[opid2].cycle);
+    int early = std::min(hout.scheds[opid1], hout.scheds[opid2]);
+    int late = std::max(hout.scheds[opid1], hout.scheds[opid2]);
     if (rs.is_pipelined) {
         if (early == late) return true;
     } else {
@@ -76,7 +73,7 @@ int ConflictGraph::add_color(int op) {
 vector<pair<int, int>> sort_interval_graph(const HLSOutput &hout) {
     vector<pair<int, int>> res(hout.n_operation);
     for (int i = 0; i < res.size(); i++) {
-        res[i] = std::make_pair(hout.scheds[i].cycle, i);
+        res[i] = std::make_pair(hout.scheds[i], i);
     }
     sort(res.begin(), res.end());
     return res;
@@ -128,9 +125,11 @@ int bind(const HLSInput &hls_input, HLSOutput &hls_output) {
 
     // Write back the result
     for (int i = 0; i < hls_input.n_operation; i++) {
-        hls_output.scheds[i].inst = conf_graph.colors[i];
+        hls_output.binds[i] = conf_graph.colors[i];
     }
     return 0;
 }
+
+// TODO: color doesn't match instance number
 
 };  // namespace hls

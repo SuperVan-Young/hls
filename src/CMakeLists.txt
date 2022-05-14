@@ -1,9 +1,24 @@
-message("Inside subdirectory src")
+# build lib
 
-# libio
-add_subdirectory(data)
+add_library(libhls STATIC)
 
-# algorithm libs
-add_subdirectory(allocate)
-add_subdirectory(schedule)
-add_subdirectory(bind)
+# add interface
+target_include_directories(libhls PUBLIC ${CMAKE_SOURCE_DIR}/include)
+
+# add source files
+aux_source_directory(data HLS_SOURCE_DATA)
+aux_source_directory(allocate HLS_SOURCE_ALLOCATE)
+aux_source_directory(schedule HLS_SOURCE_SCHEDULE)
+aux_source_directory(bind HLS_SOURCE_BIND)
+
+target_sources(
+    libhls
+    PRIVATE ${HLS_SOURCE_DATA}
+    PRIVATE ${HLS_SOURCE_ALLOCATE}
+    PRIVATE ${HLS_SOURCE_SCHEDULE}
+    PRIVATE ${HLS_SOURCE_BIND}
+)
+
+# link third party library
+# target_link_libraries(libhls PRIVATE ${LIB_LPSOLVE})
+target_link_libraries(libhls PRIVATE liblpsolve55.so)
