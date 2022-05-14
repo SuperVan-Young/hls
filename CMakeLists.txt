@@ -16,7 +16,8 @@ FetchContent_MakeAvailable(lpsolve)
 # find_library(LIB_LPSOLVE liblpsolve55.so ${CMAKE_SOURCE_DIR}/ext/lpsolve)
 # message(${LIB_LPSOLVE})
 link_directories(${CMAKE_SOURCE_DIR}/ext/lpsolve)
-include_directories(${CMAKE_SOURCE_DIR}/ext/lpsolve) # damn I have to do this
+include_directories(${CMAKE_SOURCE_DIR}/ext/lpsolve)
+
 
 add_subdirectory(src)
 
