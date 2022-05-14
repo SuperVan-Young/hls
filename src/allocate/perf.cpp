@@ -3,10 +3,9 @@
 #include <cmath>
 #include <limits>
 #include <map>
+#include <queue>
 using std::map;
-
-// #define DEBUG
-// #define DEBUG_ALLOCATE
+using std::priority_queue;
 
 namespace hls {
 
@@ -34,7 +33,7 @@ static AdjacentList build_induced_graph(int bbid, const HLSInput &hin) {
         }
     }
 
-#ifdef DEBUG
+#ifdef DEBUG_HLS_ALLOCATE_PERF
     // display the result
     using std::cout;
     using std::endl;
@@ -96,7 +95,7 @@ void AbstractedCDFG::setup() {
         cur_dependency[depth]++;
     }
 
-#ifdef DEBUG
+#ifdef DEBUG_HLS_ALLOCATE_PERF
     print();
 #endif
 }
@@ -140,9 +139,19 @@ float AbstractedCDFG::estimate_perf(int optype, const ResourceType &rtype,
     return res;
 }
 
+// Run estimation on all basic blocks
+// Return an expected latency
+float PerfAllocator::estimate_perf(int optype, const ResourceType &rtype, int num) {
+    float exp_perf = 0;
+    for (int i = 0; i < n_block; i++) {
+        exp_perf += cdfgs[i].estimate_perf(optype, rtype, num);
+    }
+    return exp_perf;
+}
+
 // Change types to better ones
 void PerfAllocator::allocate_type(int area_limit) {
-#ifdef DEBUG_ALLOCATE
+#ifdef DEBUG_HLS_ALLOCATE_PERF
     print(true);
 #endif
 
@@ -168,12 +177,7 @@ void PerfAllocator::allocate_type(int area_limit) {
             if (!is_comp) continue;
 
             // get expected performance on each basic block
-            float exp_perf = 0;
-            for (int i = 0; i < n_block; i++) {
-                float tmp = cdfgs[i].estimate_perf(optype, rtype, 1);
-                if (tmp > 0) exp_perf += tmp;
-            }
-            exp_perfs[optype][rtid] = exp_perf;
+            exp_perfs[optype][rtid] = estimate_perf(optype, rtype, 1);
         }
     }
 
@@ -219,15 +223,52 @@ void PerfAllocator::allocate_type(int area_limit) {
         }
     }
 
-#ifdef DEBUG_ALLOCATE
+#ifdef DEBUG_HLS_ALLOCATE_PERF
     print(true);
 #endif
 }
 
 void PerfAllocator::allocate_inst() {
-    // TODO: optimize according to area / (perf0 - perf)
+    priority_queue<IncrNode, vector<IncrNode>> q;
 
-    
+    // initialize q
+    int total_area = 0;
+    for (int otid = 0; otid < n_op_type; otid++) {
+        auto opcate = hin->op_types[otid];
+        if (hin->need_bind(opcate)) {
+            insts[otid] = 1;  // reduce unnecessary allocation
+
+            const auto &rtype = hin->resource_types[ot2rtid[otid]];
+            total_area += rtype.area;
+
+            IncrNode node;
+            node.optype = otid;
+            node.area = rtype.area;
+            node.oldperf = estimate_perf(otid, rtype, 1);
+            node.newperf = estimate_perf(otid, rtype, 2);
+            q.push(node);
+        } else {
+            insts[otid] = 0;
+        }
+    }
+
+    // allocate more insts
+    while (!q.empty()) {
+        auto node = q.top();
+        q.pop();
+
+        if (total_area + node.area <= hin->area_limit) {
+            // update on success
+            total_area += node.area;
+            insts[node.optype]++;
+
+            // push back new option
+            node.oldperf = node.newperf;
+            const auto &rtype = hin->resource_types[ot2rtid[node.optype]];
+            node.newperf = estimate_perf(node.optype, rtype, insts[node.optype]);
+            q.push(node);
+        }
+    }
 }
 
 }  // namespace hls
