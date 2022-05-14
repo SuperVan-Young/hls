@@ -8,9 +8,15 @@ include(FetchContent)
 
 FetchContent_Declare(
     lpsolve
-    URL https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.11/lp_solve_5.5.2.11_source.tar.gz
+    URL https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5/lp_solve_5.5.2.5_dev_ux64.tar.gz
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ext/lpsolve
 )
+FetchContent_MakeAvailable(lpsolve)
+
+# find_library(LIB_LPSOLVE liblpsolve55.so ${CMAKE_SOURCE_DIR}/ext/lpsolve)
+# message(${LIB_LPSOLVE})
+link_directories(${CMAKE_SOURCE_DIR}/ext/lpsolve)
+include_directories(${CMAKE_SOURCE_DIR}/ext/lpsolve) # damn I have to do this
 
 add_subdirectory(src)
 

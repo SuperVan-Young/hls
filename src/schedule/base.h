@@ -2,15 +2,15 @@
 #define HLS_SCHEDULE_BASE_H
 
 #include <queue>
-#include <vector>
 #include <set>
+#include <vector>
 
 #include "io.h"
 
 using std::map;
 using std::queue;
-using std::vector;
 using std::set;
+using std::vector;
 
 namespace hls {
 
@@ -20,7 +20,7 @@ typedef map<int, AdjacentNode> AdjacentList;
 // Basic scheduler
 // Schedule one basic block at a time and give a worst linear scheduling.
 class BaseScheduler {
-   public:
+   protected:
     int n_block;
     int n_operation;
     int n_op_type;
@@ -29,6 +29,7 @@ class BaseScheduler {
     vector<int> insts;
     vector<int> scheds;
 
+   public:
     BaseScheduler(const HLSInput &hin, const HLSOutput &hout) {
         n_block = hin.n_block;
         n_operation = hin.n_operation;
@@ -41,7 +42,7 @@ class BaseScheduler {
 
     vector<int> sort_basic_block();
 
-    int schedule_block(int bbid, map<int, int> &res);
+    virtual int schedule_block(int bbid, map<int, int> &res);
 
     int schedule();
 

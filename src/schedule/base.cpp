@@ -54,7 +54,7 @@ bool is_basic_block_ready(int bbid, const HLSInput &hin,
     for (auto opid : bb.ops) {
         const auto &op = hin.operations[opid];
         // PHI nodes could be scheduled unconditionally
-        if (hin.get_op_cate(&op) == OP_PHI) continue;
+        if (hin.get_opcate(opid) == OP_PHI) continue;
         for (auto in : op.inputs) {
             if (op_in_block.count(in)) continue;  // ignore op in block
             if (!ready_list[in]) return false;    // not ready!
@@ -82,7 +82,7 @@ int BaseScheduler::schedule_block(int bbid, map<int, int> &res) {
     int l = 0;
     for (auto opid: topo) {
         const auto &op = hin->operations[opid];
-        OpCategory opcate = hin->get_op_cate(&op);
+        OpCategory opcate = hin->get_opcate(opid);
         if (opcate == OP_ALLOCA || opcate == OP_BRANCH || opcate == OP_PHI)
             res.insert(std::make_pair(opid, -1));
         else
@@ -142,7 +142,7 @@ AdjacentList build_induced_graph(int bbid, const HLSInput &hin) {
     // add edges
     for (auto v : bb.ops) {
         const auto &op = hin.operations[v];
-        if (hin.get_op_cate(&op) == OP_PHI)  // ignore phi nodes inputs
+        if (hin.get_opcate(v) == OP_PHI)  // ignore phi nodes inputs
             continue;
         for (auto u : op.inputs) {
             if (list.count(u)) {  // prev vertex, ignore -1 automatically

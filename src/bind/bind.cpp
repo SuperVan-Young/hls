@@ -6,11 +6,8 @@ namespace hls {
 
 // Check if an operation needs binding
 bool ConflictGraph::need_binding(int opid, const HLSInput &hin) {
-    const auto &op = hin.operations[opid];
-    OpCategory op_cate = hin.get_op_cate(&op);
-    if (op_cate != OP_ARITHM && op_cate != OP_BOOL && op_cate != OP_COMPARE)
-        return false;
-    return true;
+    OpCategory opcate = hin.get_opcate(opid);
+    return hin.need_bind(opcate);
 }
 
 // Check if two operations have conflict.

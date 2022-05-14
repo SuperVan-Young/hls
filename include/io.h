@@ -97,9 +97,11 @@ class HLSInput {
 
     HLSInput(char *);
     void print() const;
-    OpCategory get_op_cate(const Operation *op) const {
-        return op_types[op->optype];
-    }
+
+    // Catchy translations
+    OpCategory get_opcate(int opid) const;
+    bool need_schedule(OpCategory) const;
+    bool need_bind(OpCategory) const;
 };
 
 class HLSOutput {

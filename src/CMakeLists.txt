@@ -18,3 +18,7 @@ target_sources(
     PRIVATE ${HLS_SOURCE_SCHEDULE}
     PRIVATE ${HLS_SOURCE_BIND}
 )
+
+# link third party library
+# target_link_libraries(libhls PRIVATE ${LIB_LPSOLVE})
+target_link_libraries(libhls PRIVATE liblpsolve55.so)
