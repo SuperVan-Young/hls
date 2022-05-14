@@ -4,12 +4,6 @@
 
 namespace hls {
 
-// Check if an operation needs binding
-bool ConflictGraph::need_binding(int opid, const HLSInput &hin) {
-    OpCategory opcate = hin.get_opcate(opid);
-    return hin.need_bind(opcate);
-}
-
 // Check if two operations have conflict.
 // Returns true on conflict, false on no conflict.
 bool ConflictGraph::check_conflict(int opid1, int opid2, const HLSInput &hin,
@@ -21,7 +15,7 @@ bool ConflictGraph::check_conflict(int opid1, int opid2, const HLSInput &hin,
     if (op1.optype != op2.optype) return false;
 
     // Operation needs to be binded?
-    if (!need_binding(opid1, hin)) return false;
+    if (!hin.need_bind(hin.get_opcate(opid1))) return false;
 
     // Execution overlaps?
     int optype = op1.optype;
@@ -32,7 +26,7 @@ bool ConflictGraph::check_conflict(int opid1, int opid2, const HLSInput &hin,
     if (rs.is_pipelined) {
         if (early == late) return true;
     } else {
-        if (early + rs.latency > late) return true;
+        if (late - early < rs.latency + 1) return true;
     }
     return false;
 }
@@ -90,6 +84,11 @@ int bind(const HLSInput &hls_input, HLSOutput &hls_output) {
             bool is_conf =
                 conf_graph.check_conflict(i, j, hls_input, hls_output);
             if (is_conf) {
+                // Different basic blocks shouldn't have conflicts
+                const auto &op1 = hls_input.operations[i];
+                const auto &op2 = hls_input.operations[j];
+                if (op1.bbid != op2.bbid)
+                    std::cerr << "Bind: Conflict between op in different bb!" << std::endl;
                 conf_graph.add_conflict(i, j);
             }
         }
@@ -110,7 +109,7 @@ int bind(const HLSInput &hls_input, HLSOutput &hls_output) {
     // binding operations
     for (auto node : peo) {
         int opid = node.second;
-        if (conf_graph.need_binding(opid, hls_input))
+        if (hls_input.need_bind(hls_input.get_opcate(opid)))
             conf_graph.add_color(opid);
     }
 

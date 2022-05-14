@@ -24,3 +24,7 @@ add_subdirectory(src)
 # install application to build
 add_executable(hls src/main.cpp)
 target_link_libraries(hls PRIVATE libhls)
+
+# testing executables
+add_executable(display src/display.cpp)
+target_link_libraries(display PRIVATE libhls)

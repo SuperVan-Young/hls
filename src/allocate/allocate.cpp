@@ -15,7 +15,7 @@ int allocate(const HLSInput &hls_input, HLSOutput &hls_output) {
     // allocator.allocate_inst();
     auto allocator = PerfAllocator(hls_input);
     allocator.allocate_type(hls_input.area_limit);
-    // allocator.allocate_inst();
+    allocator.allocate_inst();
     if (!allocator.validate()) {
         std::cerr << "Errors: Allocate\n";
         return -1;

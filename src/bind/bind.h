@@ -27,8 +27,6 @@ class ConflictGraph {
         colors.resize(n_vertex, -1);
     }
 
-    bool need_binding(int opid, const HLSInput &hin);
-    
     bool check_conflict(int opid1, int opid2, const HLSInput &hin, const HLSOutput &hout);
 
     void add_conflict(int opid1, int opid2);
