@@ -55,6 +55,20 @@ class PerfAllocator : public AreaAllocator {
     }
     void allocate_type(int area_limit);
     void allocate_inst();
+    float estimate_perf(int optype, const ResourceType &rtype, int num);
+};
+
+// Evaluation on adding one more resource instance
+class IncrNode {
+   public:
+    int optype;
+    int area;
+    float oldperf;
+    float newperf;
+
+    bool operator<(const IncrNode &x) const {
+        return (area / (oldperf - newperf)) < (x.area / (x.oldperf - x.newperf));
+    }
 };
 
 }  // namespace hls
