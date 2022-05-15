@@ -53,7 +53,7 @@ hls::HLSInput::HLSInput(char *filename) {
     }
     // op's bbid
     for (int i = 0; i < n_block; i++) {
-        hls::BasicBlock &bb = blocks[i]; 
+        hls::BasicBlock &bb = blocks[i];
         for (int j = 0; j < bb.n_op_in_block; j++) {
             hls::Operation &op = operations[bb.ops[j]];
             op.bbid = i;
@@ -99,17 +99,7 @@ void hls::HLSOutput::output() {
     std::cout << std::endl;
 
     // allocation result
-    vector<int> cnt_rtype(n_resource_type, 0);
-    vector<int> op2rbase(n_op_type, 0); // optype -> smallest output rid
-    for (int optype = 0; optype < n_op_type; optype++) {
-        int rtid = ot2rtid[optype];
-        if (rtid != -1) {  // allocated with rtype
-            op2rbase[optype] = cnt_rtype[rtid];
-            cnt_rtype[rtid] += insts[optype]; // but insts could be 0
-        }
-    }
-    for (auto cnt: cnt_rtype)
-        std::cout << cnt << ' ';
+    for (auto cnt : rinsts) std::cout << cnt << ' ';
     std::cout << std::endl;
 
     // binding result
@@ -121,9 +111,7 @@ void hls::HLSOutput::output() {
         int rid = binds[opid];
         if (rid == -1) {
             std::cout << -1 << std::endl;
-        }
-        else {
-            rid += op2rbase[optype];
+        } else {
             std::cout << ot2rtid[optype] << ' ' << rid << std::endl;
         }
     }
