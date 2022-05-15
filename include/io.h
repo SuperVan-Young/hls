@@ -113,10 +113,15 @@ class HLSOutput {
     const HLSInput *hin;
     // allocate type
     std::vector<int> ot2rtid;  // length of n_op_type
+
     // allocate inst
-    std::vector<int> insts;  // length of n_op_type
+    // Allocator must maintain correspondence on output
+    std::vector<int> insts;   // length of n_op_type
+    std::vector<int> rinsts;  // length of n_resource_type
+
     // scheduling
     std::vector<int> scheds;  // length of n_operation
+
     // binding
     std::vector<int> binds;  // length of n_operation
 
@@ -127,6 +132,7 @@ class HLSOutput {
         this->hin = &hin;
         ot2rtid.resize(n_op_type, -1);
         insts.resize(n_op_type, 0);
+        rinsts.resize(n_resource_type, 0);
         scheds.resize(n_operation, -1);
         binds.resize(n_operation, -1);
     }

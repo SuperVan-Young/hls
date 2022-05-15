@@ -55,10 +55,17 @@ bool AreaAllocator::validate() {
 }
 
 // Write result to hls output
+// By default, we allocate each optype some exclusive instances,
+// then gather those of the same type.
+// We take this kind of reusing as an extra opportunity for scheduling.
 void AreaAllocator::copyout(HLSOutput &hout) {
     for (int op = 0; op < n_op_type; op++) {
         hout.ot2rtid[op] = ot2rtid[op];
         hout.insts[op] = insts[op];
+
+        int rt = ot2rtid[op];
+        if (rt != -1)
+            hout.rinsts[rt] += insts[op];
     }
 }
 
