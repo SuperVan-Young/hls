@@ -66,8 +66,9 @@ class IncrNode {
     float oldperf;
     float newperf;
 
+    // maximize performance gain, minimize area cost
     bool operator<(const IncrNode &x) const {
-        return (area / (oldperf - newperf)) < (x.area / (x.oldperf - x.newperf));
+        return ((oldperf - newperf) / area) < ((x.oldperf - x.newperf) / x.area);
     }
 };
 
