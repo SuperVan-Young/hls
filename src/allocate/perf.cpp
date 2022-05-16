@@ -4,6 +4,8 @@
 #include <limits>
 #include <map>
 #include <queue>
+using std::cerr;
+using std::endl;
 using std::map;
 using std::priority_queue;
 
@@ -32,19 +34,6 @@ static AdjacentList build_induced_graph(int bbid, const HLSInput &hin) {
             }
         }
     }
-
-#ifdef DEBUG_HLS_ALLOCATE_PERF
-    // display the result
-    using std::cout;
-    using std::endl;
-    cout << "Adjacent List of bbid " << bbid << endl;
-    for (auto it = list.begin(); it != list.end(); it++) {
-        cout << it->first << " ";
-        cout << "(" << it->second.first << "): ";
-        for (auto v : it->second.second) cout << v << ' ';
-        cout << endl;
-    }
-#endif
 
     return list;
 }
@@ -94,10 +83,6 @@ void AbstractedCDFG::setup() {
             cur_dependency.push_back(0);
         cur_dependency[depth]++;
     }
-
-#ifdef DEBUG_HLS_ALLOCATE_PERF
-    print();
-#endif
 }
 
 void AbstractedCDFG::print() {
@@ -141,7 +126,8 @@ float AbstractedCDFG::estimate_perf(int optype, const ResourceType &rtype,
 
 // Run estimation on all basic blocks
 // Return an expected latency
-float PerfAllocator::estimate_perf(int optype, const ResourceType &rtype, int num) {
+float PerfAllocator::estimate_perf(int optype, const ResourceType &rtype,
+                                   int num) {
     float exp_perf = 0;
     for (int i = 0; i < n_block; i++) {
         exp_perf += cdfgs[i].estimate_perf(optype, rtype, num);
@@ -261,12 +247,30 @@ void PerfAllocator::allocate_inst() {
             total_area += node.area;
             node.num = ++insts[node.optype];
 
+            // debug: print result
+            // cerr << "Perf gain on " << node.num << "-th inst of  optype "
+            //      << node.optype << " = "
+            //      << (node.oldperf - node.newperf) / node.area << endl;
+
             // push back new option
             node.oldperf = node.newperf;
             const auto &rtype = hin->resource_types[ot2rtid[node.optype]];
-            node.newperf = estimate_perf(node.optype, rtype, insts[node.optype]);
+            node.newperf =
+                estimate_perf(node.optype, rtype, insts[node.optype]);
             q.push(node);
         }
+    }
+}
+
+
+// maximize performance gain, minimize area cost
+bool IncrNode::operator<(const IncrNode &x) const {
+    auto gain = (oldperf - newperf) / area;
+    auto x_gain = (x.oldperf - x.newperf) / x.area;
+    if (fabs(gain - x_gain) < 1) {
+        return num > x.num;  // smaller num, higher prior
+    } else {
+        return gain < x_gain;  // higher gain, higher prior
     }
 }
 

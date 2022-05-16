@@ -65,15 +65,7 @@ class IncrNode {
     float newperf;
 
     // maximize performance gain, minimize area cost
-    bool operator<(const IncrNode &x) const {
-        auto gain = (oldperf - newperf) / area;
-        auto x_gain = (x.oldperf - x.newperf) / x.area;
-        if (fabs(gain - x_gain) < 1e-4) {
-            return num < x.num;
-        } else {
-            return gain < x_gain;
-        }
-    }
+    bool operator<(const IncrNode &x) const;
 };
 
 }  // namespace hls
