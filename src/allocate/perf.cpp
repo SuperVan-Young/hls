@@ -231,19 +231,18 @@ void PerfAllocator::allocate_type(int area_limit) {
 void PerfAllocator::allocate_inst() {
     priority_queue<IncrNode, vector<IncrNode>> q;
 
-    // initialize q
+    // initialize q and insts
     int total_area = 0;
     for (int otid = 0; otid < n_op_type; otid++) {
         auto opcate = hin->op_types[otid];
         if (hin->need_bind(opcate)) {
-            insts[otid] = 1;  // reduce unnecessary allocation
-
             const auto &rtype = hin->resource_types[ot2rtid[otid]];
             total_area += rtype.area;
 
             IncrNode node;
             node.optype = otid;
             node.area = rtype.area;
+            node.num = ++insts[otid];
             node.oldperf = estimate_perf(otid, rtype, 1);
             node.newperf = estimate_perf(otid, rtype, 2);
             q.push(node);
@@ -260,7 +259,7 @@ void PerfAllocator::allocate_inst() {
         if (total_area + node.area <= hin->area_limit) {
             // update on success
             total_area += node.area;
-            insts[node.optype]++;
+            node.num = ++insts[node.optype];
 
             // push back new option
             node.oldperf = node.newperf;

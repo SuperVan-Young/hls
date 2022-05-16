@@ -4,6 +4,7 @@
 #include <vector>
 #include <queue>
 #include <map>
+#include <cmath>
 
 #include "area.h"
 #include "io.h"
@@ -48,10 +49,6 @@ class PerfAllocator : public AreaAllocator {
         for (int i = 0; i < n_block; i++) {
             cdfgs.push_back(AbstractedCDFG(n_op_type, i, hin));
         }
-
-        // initialize type and insts with area allocator
-        AreaAllocator::allocate_type();
-        AreaAllocator::allocate_inst();
     }
     void allocate_type(int area_limit);
     void allocate_inst();
@@ -63,12 +60,19 @@ class IncrNode {
    public:
     int optype;
     int area;
+    int num;
     float oldperf;
     float newperf;
 
     // maximize performance gain, minimize area cost
     bool operator<(const IncrNode &x) const {
-        return ((oldperf - newperf) / area) < ((x.oldperf - x.newperf) / x.area);
+        auto gain = (oldperf - newperf) / area;
+        auto x_gain = (x.oldperf - x.newperf) / x.area;
+        if (fabs(gain - x_gain) < 1e-4) {
+            return num < x.num;
+        } else {
+            return gain < x_gain;
+        }
     }
 };
 

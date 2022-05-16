@@ -9,7 +9,8 @@ using std::vector;
 
 namespace hls {
 
-// Allocate each operation with an resource type of minimum area
+// Area Allocator that minimize area cost
+// Allocate each operation type with an resource type of minimum area
 // and only one instance.
 class AreaAllocator {
    protected:

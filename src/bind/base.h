@@ -8,11 +8,11 @@
 #include "algo.h"
 
 using std::vector;
-
 using std::pair;
 
 namespace hls {
 
+// Operation Conflict graph
 class ConflictGraph {
     public:
      int n_vertex = 0;
@@ -20,7 +20,7 @@ class ConflictGraph {
      vector<vector<int>> edges;
      vector<int> colors;
 
-    void setup(int n_operation) {
+    ConflictGraph(int n_operation) {
         n_vertex = n_operation;
         max_color = 0;
         edges.resize(n_vertex, vector<int>());
@@ -32,6 +32,30 @@ class ConflictGraph {
     void add_conflict(int opid1, int opid2);
 
     int add_color(int op);
+};
+
+// Binding operations to resource instances
+// Base Binder thinks each optype has exclusive resource instances
+class BaseBinder {
+    public:
+    const HLSInput *hin;
+    const HLSOutput *hout;
+    int n_operation;
+    int n_op_type;
+    vector<int> binds;
+
+
+    BaseBinder(const HLSInput &hin, const HLSOutput &hout) {
+        this->hin = &hin;
+        this->hout = &hout;
+        this->n_operation = hin.n_operation;
+        this->n_op_type = hin.n_op_type;
+        binds.resize(n_operation, -1);
+    }
+
+    int bind();
+
+    void copyout(HLSOutput &hout);
 };
 
 vector<pair<int, int>> sort_interval_graph(const HLSOutput &hout);
