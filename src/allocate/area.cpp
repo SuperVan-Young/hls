@@ -71,16 +71,17 @@ void AreaAllocator::copyout(HLSOutput &hout) {
 
 // Display allocated result
 void AreaAllocator::print(bool verbose) const {
-    using std::cout;
+    using std::cerr;
     using std::endl;
-    cout << "Allocation Result" << endl;
+    cerr << "Allocation Result" << endl;
+    cerr << "Optype | Resource Type | num of insts" << endl;
     for (int i = 0; i < n_op_type; i++) {
-        cout << i << ": " << ot2rtid[i] << ", " << insts[i] << endl;
+        cerr << i << ": " << ot2rtid[i] << ", " << insts[i] << endl;
         if (verbose) {
             int rtid = ot2rtid[i];
             if (rtid != - 1)
                 hin->resource_types[rtid].print();
-            cout << endl;
+            cerr << endl;
         }
     }
 }
