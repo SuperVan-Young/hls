@@ -158,6 +158,10 @@ int SDCScheduler::add_constraints(int bbid, lprec *lp) {
 
         // add dependency on the out edges
         for (auto out : it->second.second) {
+            // optimize: ignore unscheduled outputs
+            // which may benefit x_end
+            if (!hin->need_schedule(hin->get_opcate(out))) continue;
+
             if (!ret) {
                 // x_out - x_opid >= latency + 1
                 colno[0] = op2idx[out] + 1;
@@ -207,7 +211,7 @@ int SDCScheduler::add_constraints(int bbid, lprec *lp) {
             if (rt.is_pipelined)
                 latency = 1;
             else
-                latency = rt.latency + 1; // still has delay!
+                latency = rt.latency + 1;  // still has delay!
         } else {
             latency = 1;  // otherwise combinational ops will conflict
         }
