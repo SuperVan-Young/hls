@@ -12,7 +12,8 @@ done
 # thorough checking
 cd ./HLS-lab1/cases
 
-for i in [1..8]
+
+for i in {1..8}
 do
     ./test.sh ${i} ../../build/hls ../build/src/checker ../build/src/score_calc
 done

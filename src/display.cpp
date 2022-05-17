@@ -1,9 +1,7 @@
 #include <iostream>
 
 #include "io.h"
-#include "algo.h"
 
-// #define DEBUG_MAIN
 using std::cerr;
 using std::endl;
 

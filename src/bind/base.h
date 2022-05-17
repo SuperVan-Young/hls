@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "algo.h"
 #include "io.h"
 #include "graph.h"
 
