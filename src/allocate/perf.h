@@ -8,6 +8,7 @@
 
 #include "area.h"
 #include "io.h"
+#include "graph.h"
 
 using std::vector;
 using std::queue;

@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "io.h"
+#include "graph.h"
 
 using std::map;
 using std::queue;
@@ -13,9 +14,6 @@ using std::set;
 using std::vector;
 
 namespace hls {
-
-typedef pair<int, vector<int>> AdjacentNode;
-typedef map<int, AdjacentNode> AdjacentList;
 
 // Basic scheduler
 // Schedule one basic block at a time and give a worst linear scheduling.
@@ -51,11 +49,6 @@ class BaseScheduler {
 
 bool is_basic_block_ready(int bbid, const HLSInput &hin,
                           const vector<bool> &ready_list);
-
-AdjacentList build_induced_graph(int bbid, const HLSInput &hin);
-
-int topology_sort(AdjacentList g, vector<int> &out);
-
 };  // namespace hls
 
 #endif

@@ -24,8 +24,7 @@ vector<int> BaseScheduler::sort_basic_block() {
         bfs.pop();
 
         // DO NOT rerun
-        if (finished_block[bbid])
-            continue;
+        if (finished_block[bbid]) continue;
 
         const BasicBlock &bb = hin->blocks[bbid];
         if (is_basic_block_ready(bbid, *hin, ready_list)) {
@@ -80,7 +79,7 @@ int BaseScheduler::schedule_block(int bbid, map<int, int> &res) {
     }
 
     int l = 0;
-    for (auto opid: topo) {
+    for (auto opid : topo) {
         const auto &op = hin->operations[opid];
         OpCategory opcate = hin->get_opcate(opid);
         if (opcate == OP_ALLOCA || opcate == OP_BRANCH || opcate == OP_PHI)
@@ -91,7 +90,7 @@ int BaseScheduler::schedule_block(int bbid, map<int, int> &res) {
         // update l
         int rtid = ot2rtid[op.optype];
         int latency = hin->resource_types[rtid].latency;
-        l += latency + 1; // result must have been ready by now 
+        l += latency + 1;  // result must have been ready by now
     }
     return l;
 }
@@ -104,15 +103,14 @@ int BaseScheduler::schedule() {
     int lasting;
     if (order.size() != n_block) {
         std::cerr << "Error: Base Scheduler sort blocks " << std::endl;
-        for (auto bbid: order)
-            std::cerr << bbid << ' ';
+        for (auto bbid : order) std::cerr << bbid << ' ';
         std::cerr << std::endl;
         return -1;
     }
 
-    for (auto bbid: order) {
+    for (auto bbid : order) {
         map<int, int> bb_sched;
-        
+
         if ((lasting = schedule_block(bbid, bb_sched)) < 0) {
             std::cerr << "Error: Base Scheduler scheduling" << std::endl;
             return -1;
@@ -125,62 +123,6 @@ int BaseScheduler::schedule() {
         }
         start += lasting;
     }
-    return 0;
-}
-
-// Build an induced graph of basic block
-// Vertex are operation in the basic block
-// Edges are dependencies (ignore phi nodes in degree)
-AdjacentList build_induced_graph(int bbid, const HLSInput &hin) {
-    AdjacentList list;
-    const BasicBlock &bb = hin.blocks[bbid];
-
-    // add nodes
-    for (auto v : bb.ops)
-        list.insert(std::make_pair(v, AdjacentNode(0, vector<int>())));
-
-    // add edges
-    for (auto v : bb.ops) {
-        const auto &op = hin.operations[v];
-        if (hin.get_opcate(v) == OP_PHI)  // ignore phi nodes inputs
-            continue;
-        for (auto u : op.inputs) {
-            if (list.count(u)) {  // prev vertex, ignore -1 automatically
-                list[v].first++;  // in degree ++
-                list[u].second.push_back(v);  // append to outs
-            }
-        }
-    }
-    return list;
-}
-
-// Give a topology sort for non-empty DAG and write to out.
-// Returns 0 on success, -1 on errors (loops).
-int topology_sort(AdjacentList g, vector<int> &out) {
-    out.empty();
-
-    queue<int> q_ready;
-
-    for (auto it = g.begin(); it != g.end(); it++) {
-        if (it->second.first == 0) {  // in degree == 0
-            q_ready.push(it->first);
-        }
-    }
-
-    while (!q_ready.empty()) {
-        auto v = q_ready.front();
-        q_ready.pop();
-        out.push_back(v);
-        auto node = g[v];
-        for (auto u: node.second) {  // out vertex
-            if ((--g[u].first) == 0) {  // in degree
-                q_ready.push(u);
-            }
-        }
-    }
-
-    if (out.size() != g.size())
-        return -1;
     return 0;
 }
 

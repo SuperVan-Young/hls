@@ -23,52 +23,6 @@ map<int, int> build_op2idx(const BasicBlock &bb) {
     return res;
 }
 
-// Topology sort induced graph g, but output according to each operation type
-// Returns 0 on success, -1 on errors (loops)
-int topology_sort(AdjacentList g, const HLSInput &hin,
-                  vector<vector<int>> &out) {
-    out.resize(hin.n_op_type, vector<int>());
-    int cnt = 0;
-
-    queue<int> q_ready;
-
-    for (auto it = g.begin(); it != g.end(); it++) {
-        if (it->second.first == 0) {  // in degree == 0
-            q_ready.push(it->first);
-        }
-    }
-
-    while (!q_ready.empty()) {
-        auto v = q_ready.front();
-        q_ready.pop();
-        cnt++;
-
-        // Record finished nodes, but write to different groups
-        auto otid = hin.operations[v].optype;
-        out[otid].push_back(v);
-
-        auto node = g[v];
-        for (auto u : node.second) {    // out vertex
-            if ((--g[u].first) == 0) {  // in degree
-                q_ready.push(u);
-            }
-        }
-    }
-
-    if (cnt != g.size()) return -1;
-
-#ifdef DEBUG_HLS_SCHEDULE_SDC
-    for (int i = 0; i < hin.n_op_type; i++) {
-        cerr << i << ": ";
-        for (auto v : out[i]) cerr << v << ' ';
-        cerr << endl;
-    }
-    cerr << endl;
-#endif
-
-    return 0;
-}
-
 int SDCScheduler::schedule_block(int bbid, map<int, int> &res) {
     const auto &bb = hin->blocks[bbid];
     int *colno = new int[bb.n_op_in_block + 1];  // ordered by bb.ops

@@ -17,9 +17,6 @@ class SDCScheduler : public BaseScheduler {
     int add_constraints(int bbid, lprec *lp);
 };
 
-int topology_sort(AdjacentList g, const HLSInput &hin,
-                  vector<vector<int>> &out);
-
 map<int, int> build_op2idx(const BasicBlock &bb);
 
 }  // namespace hls
