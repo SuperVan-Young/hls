@@ -13,7 +13,6 @@ class ILPAllocator {
     vector<bool> rtypes;  // the chosen resource types to use
     vector<int> ot2rtid;  // optype binds to which resource type?
     vector<vector<int>> ot2comprt;  // optype -> compatible rtype
-    const float theta_pipeline = 2.0;
 
    public:
     ILPAllocator(const HLSInput &hin) {
@@ -38,6 +37,12 @@ class ILPAllocator {
     // Set upper bounds for resource insts if binding exceeds area limit
     // Returns 0 on success, -1 on errors.
     int allocate_insts_bound(vector<int> &rinsts);
+
+    // Copyout type allocation results
+    void copyout(HLSOutput &hout) {
+        for (int i = 0; i < hin->n_op_type; i++)
+            hout.ot2rtid[i] = ot2rtid[i];
+    }
 };
 
 }  // namespace hls

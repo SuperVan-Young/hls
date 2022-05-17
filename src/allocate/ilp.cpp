@@ -19,14 +19,13 @@ int ILPAllocator::allocate_resource_type() {
         set_add_rowmode(lp, TRUE);
         for (int i = 1; i <= hin->n_resource_type; i++) {
             set_int(lp, i, TRUE);
-            colno[0] = i;
-            row[0] = 1;
-            if (!add_constraintex(lp, 1, row, colno, LE, 1)) {
-                cerr << "Error: adding variant upper bound" << endl;
-                ret = - -1;
-            }
+            set_bounds(lp, i, 0, 1);
         }
     }
+
+#ifndef DEBUG_HLS_SCHEDULE_SDC
+    set_verbose(lp, IMPORTANT);
+#endif
 
     // add operation type constraints
     if (!ret) {
@@ -51,10 +50,11 @@ int ILPAllocator::allocate_resource_type() {
     if (!ret) {
         int cnt = 0;
         for (const auto &rt : hin->resource_types) {
+            colno[cnt] = cnt + 1;
             row[cnt] = rt.area;
             cnt++;
         }
-        if (!add_constraint(lp, row, LE, hin->area_limit)) {
+        if (!add_constraintex(lp, cnt, row, colno, LE, hin->area_limit)) {
             cerr << "Error: adding area constraints" << endl;
             ret = -1;
         }
@@ -119,18 +119,26 @@ int ILPAllocator::allocate_operation_type() {
     return 0;
 }
 
-typedef struct {
+class QueueNode {
+   public:
     float exp_time;
     const ResourceType *rt;
     int num;
 
+    QueueNode(float exp_time, const ResourceType *rt, int num) {
+        this->exp_time = exp_time;
+        this->rt = rt;
+        this->num = num;
+    }
+
     bool operator>(const QueueNode &x) const {
-        auto res = (exp_time * (rt->latency + 1)) / (num * (num - 1));
-        auto res_ = (x.exp_time * (x.rt->latency + 1)) / (x.num * (x.num - 1));
+        float res = (this->exp_time * (rt->latency + 1)) / (num * (num - 1));
+        float res_ = (x.exp_time * (x.rt->latency + 1)) / (x.num * (x.num - 1));
         return res > res_;
     }
-} QueueNode;
+};
 
+// Returns 0 on success, 1 on needless to bind, -1 on errors.
 int ILPAllocator::allocate_insts_bound(vector<int> &rinsts) {
     // get current total area used
     int total_area = 0;
@@ -138,6 +146,8 @@ int ILPAllocator::allocate_insts_bound(vector<int> &rinsts) {
         const auto &rt = hin->resource_types[rtid];
         total_area += rinsts[rtid] * rt.area;
     }
+
+    if (total_area <= hin->area_limit) return 1;
 
     // Get expected times of execution on rtype
     vector<float> exp_times(hin->n_resource_type, 0.0);
@@ -154,10 +164,7 @@ int ILPAllocator::allocate_insts_bound(vector<int> &rinsts) {
     for (int rtid = 0; rtid < hin->n_resource_type; rtid++) {
         const auto &rt = hin->resource_types[rtid];
         if (rinsts[rtid] > 1) {
-            QueueNode n;
-            n.exp_time = exp_times[rtid];
-            n.num = rinsts[rtid];
-            n.rt = &rt;
+            QueueNode n(exp_times[rtid], &rt, rinsts[rtid]);
             q.push(n);
         }
     }

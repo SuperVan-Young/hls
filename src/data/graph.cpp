@@ -138,4 +138,16 @@ int topology_sort(AdjacentList g, const HLSInput &hin,
     return 0;
 }
 
+// Sorting interval graph with left edge algorithm
+// In module binding, left edge is just its start cycle
+// Returns: vector of pairs, in which pair = (cycle, opid)
+vector<pair<int, int>> sort_interval_graph(const HLSOutput &hout) {
+    vector<pair<int, int>> res(hout.n_operation);
+    for (int i = 0; i < res.size(); i++) {
+        res[i] = std::make_pair(hout.scheds[i], i);
+    }
+    sort(res.begin(), res.end());
+    return res;
+}
+
 };  // namespace hls

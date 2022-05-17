@@ -4,6 +4,7 @@
 #include <map>
 #include <queue>
 #include <vector>
+#include <algorithm>
 
 #include "io.h"
 
@@ -25,6 +26,8 @@ int topology_sort(AdjacentList g, const HLSInput &hin,
 
 int topology_sort(AdjacentList g, const HLSInput &hin,
                   const vector<int> &ot2rtid, vector<vector<int>> &out);
+
+vector<pair<int, int>> sort_interval_graph(const HLSOutput &hout);
 
 };  // namespace hls
 

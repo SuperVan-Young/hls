@@ -6,6 +6,7 @@
 
 #include "algo.h"
 #include "io.h"
+#include "graph.h"
 
 using std::pair;
 using std::vector;
@@ -72,7 +73,6 @@ class RBinder : public BaseBinder {
     int bind();
 };
 
-vector<pair<int, int>> sort_interval_graph(const HLSOutput &hout);
 
 };  // namespace hls
 

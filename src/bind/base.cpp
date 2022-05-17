@@ -54,18 +54,6 @@ int ConflictGraph::add_color(int op) {
     return res;
 }
 
-// Sorting interval graph with left edge algorithm
-// In module binding, left edge is just its start cycle
-// Returns: vector of pairs, in which pair = (cycle, opid)
-vector<pair<int, int>> sort_interval_graph(const HLSOutput &hout) {
-    vector<pair<int, int>> res(hout.n_operation);
-    for (int i = 0; i < res.size(); i++) {
-        res[i] = std::make_pair(hout.scheds[i], i);
-    }
-    sort(res.begin(), res.end());
-    return res;
-}
-
 // Bind scheduled operations to resource instances
 // return 0 on success, -1 on errors
 int BaseBinder::bind() {

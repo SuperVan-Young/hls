@@ -8,8 +8,7 @@
 namespace hls {
 
 int schedule(const HLSInput &hls_input, HLSOutput &hls_output) {
-    // auto scheduler = BaseScheduler(hls_input, hls_output);
-    auto scheduler = SDCScheduler(hls_input, hls_output);
+    auto scheduler = BaseScheduler(hls_input, hls_output);
     if (scheduler.schedule() < 0) {
         std::cerr << "Errors during scheduling!" << std::endl;
         return -1;
