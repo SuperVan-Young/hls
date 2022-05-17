@@ -1,0 +1,3 @@
+[submodule "HLS-lab1"]
+	path = HLS-lab1
+	url = https://github.com/kix6lj/HLS-lab1.git
