@@ -6,11 +6,18 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <queue>
 #include <vector>
 
 using std::map;
 using std::pair;
+using std::priority_queue;
+using std::queue;
 using std::vector;
+
+using std::cerr;
+using std::cout;
+using std::endl;
 
 namespace hls {
 
