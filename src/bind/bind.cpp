@@ -5,7 +5,8 @@
 namespace hls {
 
 int bind(const HLSInput &hls_input, HLSOutput &hls_output) {
-    auto binder = BaseBinder(hls_input, hls_output);
+    // auto binder = BaseBinder(hls_input, hls_output);
+    auto binder = RBinder(hls_input, hls_output);
     if (binder.bind() < 0) {
         std::cerr << "Error: bind" << std::endl;
         return -1;

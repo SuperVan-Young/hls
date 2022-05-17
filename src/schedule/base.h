@@ -22,9 +22,11 @@ class BaseScheduler {
     int n_block;
     int n_operation;
     int n_op_type;
+    int n_resource_type;
     const HLSInput *hin;
     vector<int> ot2rtid;
     vector<int> insts;
+    vector<int> rinsts;
     vector<int> scheds;
 
    public:
@@ -32,9 +34,11 @@ class BaseScheduler {
         n_block = hin.n_block;
         n_operation = hin.n_operation;
         n_op_type = hin.n_op_type;
+        n_resource_type = hin.n_resource_type;
         this->hin = &hin;
         ot2rtid = vector<int>(hout.ot2rtid);
         insts = vector<int>(hout.insts);
+        rinsts = vector<int>(hout.rinsts);
         scheds.resize(n_operation, 0);
     }
 

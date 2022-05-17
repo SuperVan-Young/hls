@@ -58,6 +58,7 @@ int SDCScheduler::schedule_block(int bbid, map<int, int> &res) {
     if (!ret) {
         int ret_lp = solve(lp);
         if (!(ret_lp == OPTIMAL || ret_lp == SUBOPTIMAL)) {
+            cerr << "LP fails with return value = " << ret_lp << endl;
             ret = -1;
         }
     }
@@ -143,22 +144,21 @@ int SDCScheduler::add_constraints(int bbid, lprec *lp) {
 
     // Resource constraints
     vector<vector<int>> topos;
-    if (topology_sort(g, *hin, topos) < 0) ret = -1;
+    if (topology_sort(g, *hin, ot2rtid, topos) < 0) {
+        cerr << "Error in SDC topology sorting!" << endl;
+        ret = -1;
+    }
 
-    for (int otid = 0; otid < n_op_type; otid++) {
-        // ignore those operations needless to schdule
-        OpCategory opcate = hin->op_types[otid];
-        if (!hin->need_bind(opcate)) continue;
-
-        auto &topo = topos[otid];
-        int k = insts[otid];
-        if (k <= 0) {
-            ret = -1;
-            break;
-        }
+    for (int rtid = 0; rtid < n_resource_type; rtid++) {
+        // operations needless to schedule have been ignored in toposort.
+        auto &topo = topos[rtid];
+        int k = rinsts[rtid];
+        // Only consider resources with more than 1 instances
+        // Load and store will be ignored here.
+        if (k <= 0)
+            continue;
 
         // get resource's latency
-        int rtid = ot2rtid[otid];
         const auto &rt = hin->resource_types[rtid];
         int latency;
         if (rt.is_sequential) {
@@ -177,10 +177,6 @@ int SDCScheduler::add_constraints(int bbid, lprec *lp) {
             colno[1] = op2idx[topo[i - k]] + 1;
             row[0] = 1;
             row[1] = -1;
-#ifdef DEBUG_HLS_SCHEDULE_SDC
-            cerr << "op[" << topo[i] << "] - op[" << topo[i - k]
-                 << "] >= " << latency << std::endl;
-#endif
             if (!add_constraintex(lp, 2, row, colno, GE, latency)) {
                 cerr << "Error on adding resource constraints" << endl;
                 ret = -1;

@@ -118,7 +118,12 @@ int topology_sort(AdjacentList g, const HLSInput &hin,
         // Record finished nodes, but write to different groups
         auto otid = hin.operations[v].optype;
         auto rtid = ot2rtid[otid];
-        out[rtid].push_back(v);
+        if (hin.need_schedule(hin.get_opcate(v)) && rtid == -1)
+            std::cerr << "Op " << v << " need scheduling but no resource type!"
+                      << std::endl;
+
+        if (rtid != -1)  // need to schedule
+            out[rtid].push_back(v);
 
         auto node = g[v];
         for (auto u : node.second) {    // out vertex

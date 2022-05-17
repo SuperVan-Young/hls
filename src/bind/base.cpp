@@ -6,34 +6,28 @@ namespace hls {
 
 // Check if two operations have conflict.
 // Returns true on conflict, false on no conflict.
-bool ConflictGraph::check_conflict(int opid1, int opid2, const HLSInput &hin,
-                                   const HLSOutput &hout) {
-    const Operation &op1 = hin.operations[opid1];
-    const Operation &op2 = hin.operations[opid2];
+bool BaseBinder::check_conflict(int opid1, int opid2) {
+    const Operation &op1 = hin->operations[opid1];
+    const Operation &op2 = hin->operations[opid2];
 
     // Operations of the same type?
     if (op1.optype != op2.optype) return false;
 
     // Operation needs to be binded?
-    if (!hin.need_bind(hin.get_opcate(opid1))) return false;
+    if (!hin->need_bind(hin->get_opcate(opid1))) return false;
 
     // Execution overlaps?
     int optype = op1.optype;
-    int rstype = hout.ot2rtid[optype];
-    const ResourceType &rs = hin.resource_types[rstype];
-    int early = std::min(hout.scheds[opid1], hout.scheds[opid2]);
-    int late = std::max(hout.scheds[opid1], hout.scheds[opid2]);
+    int rstype = hout->ot2rtid[optype];
+    const ResourceType &rs = hin->resource_types[rstype];
+    int early = std::min(hout->scheds[opid1], hout->scheds[opid2]);
+    int late = std::max(hout->scheds[opid1], hout->scheds[opid2]);
     if (rs.is_pipelined) {
         if (early == late) return true;
     } else {
         if (late - early < rs.latency + 1) return true;
     }
     return false;
-}
-
-void ConflictGraph::add_conflict(int opid1, int opid2) {
-    edges[opid1].push_back(opid2);
-    edges[opid2].push_back(opid1);
 }
 
 // Greedily add a color for op, without conflict with its colored neighboors.
@@ -79,8 +73,7 @@ int BaseBinder::bind() {
     ConflictGraph conf_graph(n_operation);
     for (int i = 0; i < n_operation; i++) {
         for (int j = i + 1; j < n_operation; j++) {
-            bool is_conf = conf_graph.check_conflict(i, j, *hin, *hout);
-            if (is_conf) {
+            if (check_conflict(i, j)) {
                 conf_graph.add_conflict(i, j);
             }
         }
@@ -122,6 +115,64 @@ void BaseBinder::copyout(HLSOutput &hout) {
     for (int i = 0; i < n_operation; i++) {
         hout.binds[i] = binds[i];
     }
+}
+
+bool RBinder::check_conflict(int opid1, int opid2) {
+    const Operation &op1 = hin->operations[opid1];
+    const Operation &op2 = hin->operations[opid2];
+
+    // Operation needs to be binded?
+    if (!hin->need_bind(hin->get_opcate(opid1))) return false;
+    if (!hin->need_bind(hin->get_opcate(opid2))) return false;
+
+    // Operation shares resource type?
+    if (hout->ot2rtid[op1.optype] != hout->ot2rtid[op2.optype]) return false;
+
+    // Execution overlaps?
+    int optype = op1.optype;
+    int rstype = hout->ot2rtid[optype];
+    const ResourceType &rs = hin->resource_types[rstype];
+    int early = std::min(hout->scheds[opid1], hout->scheds[opid2]);
+    int late = std::max(hout->scheds[opid1], hout->scheds[opid2]);
+    if (rs.is_pipelined) {
+        if (early == late) return true;
+    } else {
+        if (late - early < rs.latency + 1) return true;
+    }
+    return false;
+}
+
+int RBinder::bind() {
+    // build a conflict graph
+    ConflictGraph conf_graph(n_operation);
+    for (int i = 0; i < n_operation; i++) {
+        for (int j = i + 1; j < n_operation; j++) {
+            if (check_conflict(i, j)) {
+                conf_graph.add_conflict(i, j);
+            }
+        }
+    }
+
+    // Get a PEO
+    auto peo = sort_interval_graph(*hout);
+
+    // binding operations
+    for (auto node : peo) {
+        int opid = node.second;
+        if (hin->need_bind(hin->get_opcate(opid))) conf_graph.add_color(opid);
+    }
+
+    // write color to binds
+    for (int i = 0; i < n_operation; i++) {
+        if (hin->need_bind(hin->get_opcate(i))) {
+            int color = conf_graph.colors[i];
+            binds[i] = color;
+        } else {
+            binds[i] = -1;
+        }
+    }
+
+    return 0;
 }
 
 };  // namespace hls
