@@ -1,19 +1,24 @@
 #!/bin/bash
 
+hls=./build/hls
+display=./build/display
+checker=../build/src/checker
+score_calc=../build/src/score_calc
+case_dir=./HLS-lab1/cases/
+
 # a basic checking
-for test_case in $(ls ./HLS-lab1/cases | grep test_case[1-9].txt)
+echo validity checking
+for i in {1..10}
 do
-    echo ${test_case}
-    ./build/display ./HLS-lab1/cases/${test_case} > ./results/input_${test_case}
-    ./build/hls ./HLS-lab1/cases/${test_case} > ./results/${test_case}
-    echo ""
+    ${display} ${case_dir}/test_case${i}.txt > ./results/input_test_case${i}.txt
+    ${hls} ${case_dir}/test_case${i}.txt > ./results/test_case${i}.txt
+    # ${case_dir}${checker} ${case_dir}/test_case${i}.txt ./results/test_case${i}.txt
 done
 
 # thorough checking
 cd ./HLS-lab1/cases
 
-
-for i in {1..8}
+for i in {1..10}
 do
-    ./test.sh ${i} ../../build/hls ../build/src/checker ../build/src/score_calc
+    ./test.sh ${i} ../../build/hls ${checker} ${score_calc}
 done

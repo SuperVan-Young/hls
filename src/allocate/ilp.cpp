@@ -19,7 +19,7 @@ int ILPAllocator::allocate_resource_type() {
         set_add_rowmode(lp, TRUE);
         for (int i = 1; i <= hin->n_resource_type; i++) {
             set_int(lp, i, TRUE);
-            set_bounds(lp, i, 0, 1);
+            set_binary(lp, i, TRUE);
         }
     }
 
@@ -50,9 +50,12 @@ int ILPAllocator::allocate_resource_type() {
     if (!ret) {
         int cnt = 0;
         for (const auto &rt : hin->resource_types) {
-            colno[cnt] = cnt + 1;
-            row[cnt] = rt.area;
-            cnt++;
+            if (rt.n_comp_op > 0) {
+                // Optimization: do not add useless resources!
+                colno[cnt] = rt.rtid + 1;
+                row[cnt] = rt.area;
+                cnt++;
+            }
         }
         if (!add_constraintex(lp, cnt, row, colno, LE, hin->area_limit)) {
             cerr << "Error: adding area constraints" << endl;

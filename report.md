@@ -5,87 +5,118 @@
 
 ---
 
-To tackle the high-level synthesis problem, our approach sequentially takes 
-three separate steps: allocation, scheduling and binding. 
+The overall HLS algorithm goes as follows:
+
+- Allocate resource types.
+  Find a set of resource types covering all operation types.
+  Allocate each operation type with a resource type.
+- Schedule and bind.
+  Search for a valid order and schedule one block at a time.
+  The algorithm neglects resource constraint violation in this step.
+- If previous binding does violate the area limit, cut down some resource
+  instances until area constraint is met. Schedule and bind again.
 
 ## 1 Allocation
-In this step, we allocate each type of operation with a type of resource, 
-and instantiate some resource instances under the area limit. 
 
 ### 1.1 Allocate Resource Types
-We first decide which type of resource to use for each type of operation.
-Here we take an assumption. Assuming that each opeartion type `optype_i`
-is designated with a resource type `rtype_j`, we instantiate an exclusive
-resource instance `inst_ij`, that is, all operations of `optype_i` must be 
-executed on `inst_ij` and `inst_ij` only executes operations of `optype_i`.
-In other word, we do not consider reusing the same resource instance
-for different types of compatible operation. 
 
-Then, we use a dynamic programming algorithm to search for the "best"
-resource type allocation under the area limit. A heuristic algorithm is
-used to roughly estimate how well a resource type allocation will do.
-Let's say we have a data flow graph, with operations of the same type
-in a basic block as vertices and data dependencies as edges. The data flow
-graph is a DAG, whose depth indicates the maximum latency and whose width
-indicates opportunity with parallelism. Given the resource type's latency,
-delay and other information, we could estimate the resulting performance
-of choosing resource type `rtype` for operation type `optype`.
+Initially, allocator selects a set of resources $\{r_i\} \sube R$ and allocate
+one instance $r_i^{(0)}$ for each type.
+The union of each resource type $r_i$'s compatible operation types $S_i$
+should form a cover on the universe of operation types $S$,
+ i.e, $\cup_i S_i \supe S$.
+The total area should not exceed the given area limit.
 
-### 1.2 Allocate Resource Instances
+The above statements could be formulated as an binary ILP problem, and be given
+a solution with a linear programming solver, such as `lpsolve`.
+To make better use of the LP-solver, we add two heuristics.
+First, we set the optimization objective as maximizing the number of resources
+$|\{ r_i\}|$, so that each operation type will have more resources to choose
+from.
+Second, w.r.t. the optimization objective, and the observation that
+many useless resources appear in the resource library,
+we simply fix their corresponding variables as zero to indicate discarding.
 
-We make use of the leftover area to boost the performance. We follow the
-assumption and heuristic algorithm in the previous section. Here we take
-a greedy algorithm, that maintain a priority queue, the element of which
-is to add one more instance for an operation type. Before we use up all
-area, we choose to add an instance that will bring out the most expected
-performance gaining with the least area cost.
+The preliminary resource type allocation lays a solid foundation
+for the following steps.
+It not only assures a valid solution,
+but also shows flexibility under different scenarios.
+
+### 1.2 Assign Operation Types with Resource Types
+
+In this step, we assign each operation type $o_j$ with the best resource type
+from $\{r_i\}$.
+The selected resource type $r_i^*$ should introduce minimum overhead,
+both temporal and spatial.
+We use the following function to comprehensively
+evaluate the overhead:
+
+$$
+\text{overhead} = \text{area} \times (\text{latency + 1}) / \theta,
+$$
+
+in which $\theta=2$ is a hyper-parameter to describe benefits from pipelining.
+
+## 1.3 Cut Down Resource Instances
+
+On the first run of scheduler and binder, they aren't aware of resource
+constraints and assume infinite resource instances.
+The result may violates the total area limit, and in that case,
+we need to set a resource limit before trying again.
+
+The allocator discards the most trivial resource instance, one at a time,
+until the area constraints is met.
+We roughly estimate the effect of deleting one resource instance with
+the following formula:
+
+$$
+\text{induced latency} = \Delta E[\text{run times}] \times (\text{latency + 1}),
+$$
+
+Resource instance with minumum induced latency gets deleted, but we assures
+that there's at least one resource instance of the same type remains.
 
 ## 2 Scheduling
 
-We use a SDC solver and schedule the basic blocks one by one.
+### 2.1 Basic Block Ordering
 
-### 2.1 The order of basic blocks
-We use BFS to find a valid ordering of basic blocks. Starting from the entry
-block, we examine each basic blocks successors, and push them to bfs queue
-if all operation it depends on have been scheduled (except for inputs of
-phi nodes). 
+We use BFS to search for a valid ordering of scheduling basic blocks.
+BFS queue is initialized with the entry block.
+For every basic block, check if all its prerequisite operations have been
+executed (except for $\varphi$ nodes' inputs).
+If the basic block is ready to schedule, mark all operations in it
+as executed and push its successors to the BFS queue.
 
-### 2.2 Dependency Constraints
-The most important part of SDC Scheduler is defining the dependencies
-constraints. Let's say operation $i/j$ is scheduled to cycle $x_i \leq x_j$,
-in which operation $j$ depends on the result of operation $i$.
-If operation $i$ is executed on an non-pipelined resource instance $r$, 
-$x_j - x_i \geq lat_r + 1$. 
+## 2.2 SDC Solver
 
-Notice that we don't allow resource chaining here, which may lead to
-performance degradation.
+We use an SDC solver to schedule one basic block.
+We formulate the SDC problem in ILP and call `lpsolve` to solve it.
+The optimization objective is to minimize the largest scheduled cycle.
+The constraints are described in details in 2.3 and 2.4.
 
-### 2.3 Resource Constraints
-In order to prevent binding conflict, we add heuristic resource constraints
-here. We use bfs get a topology ordering of operations of the same type
-in a basic block. Suppose we have $k$ instances for `optype`, we add latency
-constraints between $op_{i+k}$ and $op_{i}$. Pipelined resources could have
-looser constaints: $x_{i+k} - x_{i} \geq 1$. 
-Non-pipelined resources still cannot do chaining, 
-so $x_{i+k} - x_{i} \geq lat_r + 1$.
+### 2.3 Dependency Constraints
+
+For a pair of data-dependent operations in DFG, the successor must wait for
+$\text{latency} + 1$ cycles after the predecessor.
+In this way, successor fetches the data from registers,
+which will not create complex combinational circuit,
+and we won't bother removing false loops.
+
+### 2.4 Resource Constraints
+
+We add heuristics to avoid violating resource constraints.
+For resource type $r_i$, we make a topology sorting on all the operation
+assigned to it.
+Assume we have $k$ instances of $r_i$, then $(k+j)$-th operation in the
+topology sorting should not begin before $j$-th operation finishes.
+Therefore, concurrent operations on $r_i$ will not exceed $k$.
 
 ## 3 Binding
-We build a conflict graph on the given scheduling. Two operations are in
-conflict if their execution overlaps. We use left-edge algorithm to get
-a PEO and color all operations with the PEO. We could simply use the color
-as the instance index it binds to, since each operation type exclusively 
-use the instances they are allocated with.
 
-## 4 Some Comments?
-- I intended to replace heuristic resource constraints with a SAT solver,
-  and build a SAT-SDC joint scheduling. However, I build my SDC solver 
-  with `lpsolve`, which could not give the wronged negative loop.
-  Therefore, my SAT solver couldn't get any feedback! Duh.
-- I also wanted to allow resource chaining. In this case, I would have to 
-  resolve chaining conflicts, and use Chain-Annotated Compatibility Graph
-  to get a more sophisticated conflict graph. However, coloring on this
-  conflict graph may violate the resource limit, and I have to go over 
-  everything again, which is not friendly to the current program structure.
-- Sharing resources with compatible operations seems beneficial, but I 
-  observed that allocating more resource instances barely boosts the 
-  performance. So I gave up this idea eventually.
+We use left-edge algorithm to bind the operations.
+First, we build a conflict graph, in which vertices are operations,
+and edges indicates their execution are on the same resource type and
+overlap temporally.
+Next, we sort the operations with their scheduled cycle going ascendingly.
+Finally, we use this ordering to color the conflict graph.
+The index of a color represents which instance an operation uses.
