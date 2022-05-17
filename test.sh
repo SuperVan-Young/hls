@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for test_case in $(ls ./cases | grep .txt)
+for test_case in $(ls ./cases | grep test_case[1-9].txt)
 do
     echo ${test_case}
     ./build/display "./cases/${test_case}" > "./results/input_${test_case}"

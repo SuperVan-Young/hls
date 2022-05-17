@@ -206,12 +206,14 @@ void PerfAllocator::allocate_type(int area_limit) {
         if (rtid != -1) {
             const ResourceType &rtype = hin->resource_types[rtid];
             area -= rtype.area;
+        } else {
+            auto op_cate = hin->op_types[i];
+            if (hin->need_schedule(op_cate))
+                cerr << "Optype " << i << " not allocated with rtype!" << endl;
         }
     }
 
-#ifdef DEBUG_HLS_ALLOCATE_PERF
-    print(true);
-#endif
+    // print(true);
 }
 
 void PerfAllocator::allocate_inst() {
@@ -260,6 +262,8 @@ void PerfAllocator::allocate_inst() {
             q.push(node);
         }
     }
+
+    // print(true);
 }
 
 
