@@ -46,18 +46,16 @@ int topology_sort(AdjacentList g, vector<int> &out) {
         q_ready.pop();
         out.push_back(v);
         auto node = g[v];
-        for (auto u: node.second) {  // out vertex
+        for (auto u : node.second) {    // out vertex
             if ((--g[u].first) == 0) {  // in degree
                 q_ready.push(u);
             }
         }
     }
 
-    if (out.size() != g.size())
-        return -1;
+    if (out.size() != g.size()) return -1;
     return 0;
 }
-
 
 // Topology sort induced graph g, but output according to each operation type
 // Returns 0 on success, -1 on errors (loops)
@@ -93,14 +91,44 @@ int topology_sort(AdjacentList g, const HLSInput &hin,
 
     if (cnt != g.size()) return -1;
 
-#ifdef DEBUG_HLS_SCHEDULE_SDC
-    for (int i = 0; i < hin.n_op_type; i++) {
-        cerr << i << ": ";
-        for (auto v : out[i]) cerr << v << ' ';
-        cerr << endl;
+    return 0;
+}
+
+// Topology sort induced graph g, but output according to resource type,
+// i.e., considering dependencies of ops allocated to the same resource type
+// Return 0 on success, -1 on errors (loops)
+int topology_sort(AdjacentList g, const HLSInput &hin,
+                  const vector<int> &ot2rtid, vector<vector<int>> &out) {
+    out.resize(hin.n_resource_type, vector<int>());
+    int cnt = 0;
+
+    queue<int> q_ready;
+
+    for (auto it = g.begin(); it != g.end(); it++) {
+        if (it->second.first == 0) {  // in degree == 0
+            q_ready.push(it->first);
+        }
     }
-    cerr << endl;
-#endif
+
+    while (!q_ready.empty()) {
+        auto v = q_ready.front();
+        q_ready.pop();
+        cnt++;
+
+        // Record finished nodes, but write to different groups
+        auto otid = hin.operations[v].optype;
+        auto rtid = ot2rtid[otid];
+        out[rtid].push_back(v);
+
+        auto node = g[v];
+        for (auto u : node.second) {    // out vertex
+            if ((--g[u].first) == 0) {  // in degree
+                q_ready.push(u);
+            }
+        }
+    }
+
+    if (cnt != g.size()) return -1;
 
     return 0;
 }

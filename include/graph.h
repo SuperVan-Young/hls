@@ -2,15 +2,15 @@
 #define HLS_GRAPH_H
 
 #include <map>
-#include <vector>
 #include <queue>
+#include <vector>
 
 #include "io.h"
 
 using std::map;
 using std::pair;
-using std::vector;
 using std::queue;
+using std::vector;
 
 namespace hls {
 typedef pair<int, vector<int>> AdjacentNode;
@@ -22,6 +22,9 @@ int topology_sort(AdjacentList g, vector<int> &out);
 
 int topology_sort(AdjacentList g, const HLSInput &hin,
                   vector<vector<int>> &out);
+
+int topology_sort(AdjacentList g, const HLSInput &hin,
+                  const vector<int> &ot2rtid, vector<vector<int>> &out);
 
 };  // namespace hls
 
