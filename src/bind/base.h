@@ -1,24 +1,25 @@
 #ifndef HLS_BIND_H
 #define HLS_BIND_H
 
-#include <vector>
 #include <algorithm>
+#include <vector>
 
-#include "io.h"
 #include "algo.h"
+#include "io.h"
+#include "graph.h"
 
-using std::vector;
 using std::pair;
+using std::vector;
 
 namespace hls {
 
 // Operation Conflict graph
 class ConflictGraph {
-    public:
-     int n_vertex = 0;
-     int max_color = 0;
-     vector<vector<int>> edges;
-     vector<int> colors;
+   public:
+    int n_vertex = 0;
+    int max_color = 0;
+    vector<vector<int>> edges;
+    vector<int> colors;
 
     ConflictGraph(int n_operation) {
         n_vertex = n_operation;
@@ -27,9 +28,10 @@ class ConflictGraph {
         colors.resize(n_vertex, -1);
     }
 
-    bool check_conflict(int opid1, int opid2, const HLSInput &hin, const HLSOutput &hout);
-
-    void add_conflict(int opid1, int opid2);
+    void add_conflict(int opid1, int opid2) {
+        edges[opid1].push_back(opid2);
+        edges[opid2].push_back(opid1);
+    }
 
     int add_color(int op);
 };
@@ -37,13 +39,12 @@ class ConflictGraph {
 // Binding operations to resource instances
 // Base Binder thinks each optype has exclusive resource instances
 class BaseBinder {
-    public:
+   public:
     const HLSInput *hin;
     const HLSOutput *hout;
     int n_operation;
     int n_op_type;
     vector<int> binds;
-
 
     BaseBinder(const HLSInput &hin, const HLSOutput &hout) {
         this->hin = &hin;
@@ -53,14 +54,26 @@ class BaseBinder {
         binds.resize(n_operation, -1);
     }
 
+    bool check_conflict(int opid1, int opid2);
+
     int bind();
 
     void copyout(HLSOutput &hout);
 };
 
-vector<pair<int, int>> sort_interval_graph(const HLSOutput &hout);
+// Binding operations to resource instances
+// Allows sharing resources between compatible operations
+class RBinder : public BaseBinder {
+   public:
+    RBinder(const HLSInput &hin, const HLSOutput &hout)
+        : BaseBinder(hin, hout) {}
+
+    bool check_conflict(int opid1, int opid2);
+
+    int bind();
+};
 
 
-}; // namespace hls
+};  // namespace hls
 
 #endif

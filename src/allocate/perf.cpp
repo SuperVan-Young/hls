@@ -11,33 +11,6 @@ using std::priority_queue;
 
 namespace hls {
 
-typedef pair<int, vector<int>> AdjacentNode;
-typedef map<int, AdjacentNode> AdjacentList;
-
-static AdjacentList build_induced_graph(int bbid, const HLSInput &hin) {
-    AdjacentList list;
-    const BasicBlock &bb = hin.blocks[bbid];
-
-    // add nodes
-    for (auto v : bb.ops)
-        list.insert(std::make_pair(v, AdjacentNode(0, vector<int>())));
-
-    // add edges
-    for (auto v : bb.ops) {
-        const auto &op = hin.operations[v];
-        if (hin.get_opcate(v) == OP_PHI)  // ignore phi nodes inputs
-            continue;
-        for (auto u : op.inputs) {
-            if (list.count(u)) {  // prev vertex, ignore -1 automatically
-                list[v].first++;  // in degree ++
-                list[u].second.push_back(v);  // append to outs
-            }
-        }
-    }
-
-    return list;
-}
-
 // setup depedencies for all types of operations
 void AbstractedCDFG::setup() {
     AdjacentList induced_graph = build_induced_graph(bbid, *hin);
